@@ -8,6 +8,7 @@ import {
   MonthlyData,
   ProcessedData,
   AchievementCategory,
+  PersonalInsightsData,
 } from "./types";
 import Login from "./components/Login";
 import Dashboard from "./components/Dashboard";
@@ -271,13 +272,13 @@ const App: React.FC = () => {
         }
         for (const dayStr in monthStats.daily_data) {
           const day = parseInt(dayStr, 10);
-          const dateStr = `${year}-${String(month).padStart(2, "0")}-${String(
-            day
-          ).padStart(2, "0")}`;
-          calendarData.set(
-            dateStr,
-            monthStats.daily_data[dayStr].daily_word_count
-          );
+          const dailyData = monthStats.daily_data[dayStr];
+          if (dailyData.daily_word_count > 0) {
+            const dateStr = `${year}-${String(month).padStart(2, "0")}-${String(
+              day
+            ).padStart(2, "0")}`;
+            calendarData.set(dateStr, dailyData.daily_word_count);
+          }
         }
       }
     }
@@ -325,7 +326,7 @@ const App: React.FC = () => {
       (a, b) => b.year - a.year
     );
 
-    // --- Achievements Calculation ---
+    // --- Longest Streak Calculation ---
     const sortedDates = Array.from(calendarData.keys()).sort();
     let longestStreak = 0;
     if (sortedDates.length > 0) {
@@ -336,11 +337,12 @@ const App: React.FC = () => {
           (new Date(sortedDates[i]).getTime() -
             new Date(sortedDates[i - 1]).getTime()) /
           (1000 * 60 * 60 * 24);
-        currentStreak = diffDays === 1 ? currentStreak + 1 : 1;
+        currentStreak = Math.round(diffDays) === 1 ? currentStreak + 1 : 1;
         longestStreak = Math.max(longestStreak, currentStreak);
       }
     }
 
+    // --- Achievements Calculation ---
     const { book_count: totalBooks, word_count: totalWords } = cumulative;
     const maxMonthlyWords = Math.max(
       0,
@@ -399,6 +401,7 @@ const App: React.FC = () => {
       calendarData,
       levelData,
       achievementsByCategory,
+      longestStreak,
     };
   }, [filteredReadingData]);
 

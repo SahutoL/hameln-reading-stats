@@ -58,6 +58,7 @@ const Dashboard: React.FC<DashboardProps> = ({ processedData }) => {
     cumulativeData,
     calendarData,
     levelData,
+    longestStreak,
   } = processedData;
 
   const chartData = useMemo(
@@ -74,196 +75,175 @@ const Dashboard: React.FC<DashboardProps> = ({ processedData }) => {
     [allMonthlyData]
   );
 
-  const {
-    readingTrendsData,
-    comparisonData,
-    personalInsightsData,
-    longestStreak,
-  } = useMemo(() => {
-    // --- Longest Streak ---
-    const sortedDates = Array.from(calendarData.keys()).sort();
-    let currentLongestStreak = 0;
-    if (sortedDates.length > 0) {
-      let currentStreak = 1;
-      currentLongestStreak = 1;
-      for (let i = 1; i < sortedDates.length; i++) {
-        const diffDays =
-          (new Date(sortedDates[i]).getTime() -
-            new Date(sortedDates[i - 1]).getTime()) /
-          (1000 * 60 * 60 * 24);
-        currentStreak = diffDays === 1 ? currentStreak + 1 : 1;
-        currentLongestStreak = Math.max(currentLongestStreak, currentStreak);
-      }
-    }
+  const { readingTrendsData, comparisonData, personalInsightsData } =
+    useMemo(() => {
+      // --- Comparison Data Calculation ---
+      const now = new Date();
+      const currentYear = now.getFullYear();
+      const currentMonth = now.getMonth() + 1;
 
-    // --- Comparison Data Calculation ---
-    const now = new Date();
-    const currentYear = now.getFullYear();
-    const currentMonth = now.getMonth() + 1;
+      const prevMonthDate = new Date(now);
+      prevMonthDate.setMonth(prevMonthDate.getMonth() - 1);
+      const prevMonthYear = prevMonthDate.getFullYear();
+      const prevMonth = prevMonthDate.getMonth() + 1;
 
-    const prevMonthDate = new Date(now);
-    prevMonthDate.setMonth(prevMonthDate.getMonth() - 1);
-    const prevMonthYear = prevMonthDate.getFullYear();
-    const prevMonth = prevMonthDate.getMonth() + 1;
+      const thisMonthData = allMonthlyData.find(
+        (d) => d.year === currentYear && d.month === currentMonth
+      );
+      const prevMonthData = allMonthlyData.find(
+        (d) => d.year === prevMonthYear && d.month === prevMonth
+      );
+      const thisYearData = yearlyData.find((d) => d.year === currentYear);
+      const prevYearData = yearlyData.find((d) => d.year === currentYear - 1);
 
-    const thisMonthData = allMonthlyData.find(
-      (d) => d.year === currentYear && d.month === currentMonth
-    );
-    const prevMonthData = allMonthlyData.find(
-      (d) => d.year === prevMonthYear && d.month === prevMonth
-    );
-    const thisYearData = yearlyData.find((d) => d.year === currentYear);
-    const prevYearData = yearlyData.find((d) => d.year === currentYear - 1);
+      const calcComparison = (
+        current: number,
+        previous: number
+      ): { percentage: number; direction: "up" | "down" | "same" } => {
+        if (previous === 0) {
+          return {
+            percentage: current > 0 ? 100 : 0,
+            direction: current > 0 ? "up" : "same",
+          };
+        }
+        const percentage = Math.abs(
+          Math.round(((current - previous) / previous) * 100)
+        );
+        const direction: "up" | "down" | "same" =
+          current > previous ? "up" : current < previous ? "down" : "same";
+        return { percentage, direction };
+      };
 
-    const calcComparison = (
-      current: number,
-      previous: number
-    ): { percentage: number; direction: "up" | "down" | "same" } => {
-      if (previous === 0) {
-        return {
-          percentage: current > 0 ? 100 : 0,
-          direction: current > 0 ? "up" : "same",
+      const monthlyComp = calcComparison(
+        thisMonthData?.word_count || 0,
+        prevMonthData?.word_count || 0
+      );
+      const yearlyComp = calcComparison(
+        thisYearData?.word_count || 0,
+        prevYearData?.word_count || 0
+      );
+
+      const datesFor30Days: { date: Date; words: number }[] = [];
+      calendarData.forEach((words, dateStr) =>
+        datesFor30Days.push({ date: new Date(dateStr), words })
+      );
+
+      const today = new Date();
+      const thirtyDaysAgo = new Date(new Date().setDate(today.getDate() - 30));
+      const sixtyDaysAgo = new Date(new Date().setDate(today.getDate() - 60));
+
+      const current30DaysWords = datesFor30Days
+        .filter((d) => d.date > thirtyDaysAgo && d.date <= today)
+        .reduce((sum, d) => sum + d.words, 0);
+      const previous30DaysWords = datesFor30Days
+        .filter((d) => d.date > sixtyDaysAgo && d.date <= thirtyDaysAgo)
+        .reduce((sum, d) => sum + d.words, 0);
+      const last30DaysComp = calcComparison(
+        current30DaysWords,
+        previous30DaysWords
+      );
+
+      const finalComparisonData: ComparisonData = {
+        monthly: {
+          current: thisMonthData?.word_count || 0,
+          previous: prevMonthData?.word_count || 0,
+          ...monthlyComp,
+        },
+        yearly: {
+          current: thisYearData?.word_count || 0,
+          previous: prevYearData?.word_count || 0,
+          ...yearlyComp,
+        },
+        last30days: {
+          current: current30DaysWords,
+          previous: previous30DaysWords,
+          ...last30DaysComp,
+        },
+      };
+
+      // --- Personal Insights Calculation ---
+      const dayCounts: { [day: number]: number } = {
+        0: 0,
+        1: 0,
+        2: 0,
+        3: 0,
+        4: 0,
+        5: 0,
+        6: 0,
+      };
+      calendarData.forEach(
+        (words, dateStr) => (dayCounts[new Date(dateStr).getDay()] += words)
+      );
+      const maxDayIndex = Object.keys(dayCounts).reduce((a, b) =>
+        dayCounts[Number(a)] > dayCounts[Number(b)] ? a : b
+      );
+      const dayNames = [
+        "日曜日",
+        "月曜日",
+        "火曜日",
+        "水曜日",
+        "木曜日",
+        "金曜日",
+        "土曜日",
+      ];
+
+      const activeDays = calendarData.size;
+      const totalWords = cumulativeData.word_count;
+
+      let bestMonthInfo = { month: "N/A", words: 0 };
+      if (allMonthlyData.length > 0) {
+        const best = allMonthlyData.reduce((prev, current) =>
+          prev.word_count > current.word_count ? prev : current
+        );
+        bestMonthInfo = {
+          month: `${best.year}年${best.month}月`,
+          words: best.word_count,
         };
       }
-      const percentage = Math.abs(
-        Math.round(((current - previous) / previous) * 100)
-      );
-      const direction: "up" | "down" | "same" =
-        current > previous ? "up" : current < previous ? "down" : "same";
-      return { percentage, direction };
-    };
 
-    const monthlyComp = calcComparison(
-      thisMonthData?.word_count || 0,
-      prevMonthData?.word_count || 0
-    );
-    const yearlyComp = calcComparison(
-      thisYearData?.word_count || 0,
-      prevYearData?.word_count || 0
-    );
+      const totalMonthsWithReading = allMonthlyData.length;
+      let bestYearInfo = { year: 0, words: 0 };
+      if (yearlyData.length > 0) {
+        const best = yearlyData.reduce((prev, current) =>
+          prev.word_count > current.word_count ? prev : current
+        );
+        bestYearInfo = { year: best.year, words: best.word_count };
+      }
 
-    const datesFor30Days: { date: Date; words: number }[] = [];
-    calendarData.forEach((words, dateStr) =>
-      datesFor30Days.push({ date: new Date(dateStr), words })
-    );
-
-    const today = new Date();
-    const thirtyDaysAgo = new Date(new Date().setDate(today.getDate() - 30));
-    const sixtyDaysAgo = new Date(new Date().setDate(today.getDate() - 60));
-
-    const current30DaysWords = datesFor30Days
-      .filter((d) => d.date > thirtyDaysAgo && d.date <= today)
-      .reduce((sum, d) => sum + d.words, 0);
-    const previous30DaysWords = datesFor30Days
-      .filter((d) => d.date > sixtyDaysAgo && d.date <= thirtyDaysAgo)
-      .reduce((sum, d) => sum + d.words, 0);
-    const last30DaysComp = calcComparison(
-      current30DaysWords,
-      previous30DaysWords
-    );
-
-    const finalComparisonData: ComparisonData = {
-      monthly: {
-        current: thisMonthData?.word_count || 0,
-        previous: prevMonthData?.word_count || 0,
-        ...monthlyComp,
-      },
-      yearly: {
-        current: thisYearData?.word_count || 0,
-        previous: prevYearData?.word_count || 0,
-        ...yearlyComp,
-      },
-      last30days: {
-        current: current30DaysWords,
-        previous: previous30DaysWords,
-        ...last30DaysComp,
-      },
-    };
-
-    // --- Personal Insights Calculation ---
-    const dayCounts: { [day: number]: number } = {
-      0: 0,
-      1: 0,
-      2: 0,
-      3: 0,
-      4: 0,
-      5: 0,
-      6: 0,
-    };
-    calendarData.forEach(
-      (words, dateStr) => (dayCounts[new Date(dateStr).getDay()] += words)
-    );
-    const maxDayIndex = Object.keys(dayCounts).reduce((a, b) =>
-      dayCounts[Number(a)] > dayCounts[Number(b)] ? a : b
-    );
-    const dayNames = [
-      "日曜日",
-      "月曜日",
-      "火曜日",
-      "水曜日",
-      "木曜日",
-      "金曜日",
-      "土曜日",
-    ];
-
-    const activeDays = calendarData.size;
-    const totalWords = cumulativeData.word_count;
-
-    let bestMonthInfo = { month: "N/A", words: 0 };
-    if (allMonthlyData.length > 0) {
-      const best = allMonthlyData.reduce((prev, current) =>
-        prev.word_count > current.word_count ? prev : current
-      );
-      bestMonthInfo = {
-        month: `${best.year}年${best.month}月`,
-        words: best.word_count,
+      const finalPersonalInsightsData: PersonalInsightsData = {
+        bestDayOfWeek: dayNames[Number(maxDayIndex)],
+        bestMonth: bestMonthInfo,
+        dailyAverage: activeDays > 0 ? Math.round(totalWords / activeDays) : 0,
+        avgBooksPerMonth:
+          totalMonthsWithReading > 0
+            ? parseFloat(
+                (cumulativeData.book_count / totalMonthsWithReading).toFixed(1)
+              )
+            : 0,
+        avgWordsPerBook:
+          cumulativeData.book_count > 0
+            ? Math.round(cumulativeData.word_count / cumulativeData.book_count)
+            : 0,
+        bestYear: bestYearInfo,
       };
-    }
 
-    const totalMonthsWithReading = allMonthlyData.length;
-    let bestYearInfo = { year: 0, words: 0 };
-    if (yearlyData.length > 0) {
-      const best = yearlyData.reduce((prev, current) =>
-        prev.word_count > current.word_count ? prev : current
+      // --- Reading trends calculation ---
+      const dayCountsTrend: number[] = Array(7).fill(0);
+      calendarData.forEach(
+        (words, dateStr) =>
+          (dayCountsTrend[new Date(dateStr).getDay()] += words)
       );
-      bestYearInfo = { year: best.year, words: best.word_count };
-    }
+      const trendsData = dayNames.map((day, index) => ({
+        day,
+        文字数: dayCountsTrend[index],
+      }));
 
-    const finalPersonalInsightsData: PersonalInsightsData = {
-      bestDayOfWeek: dayNames[Number(maxDayIndex)],
-      bestMonth: bestMonthInfo,
-      dailyAverage: activeDays > 0 ? Math.round(totalWords / activeDays) : 0,
-      avgBooksPerMonth:
-        totalMonthsWithReading > 0
-          ? parseFloat(
-              (cumulativeData.book_count / totalMonthsWithReading).toFixed(1)
-            )
-          : 0,
-      avgWordsPerBook:
-        cumulativeData.book_count > 0
-          ? Math.round(cumulativeData.word_count / cumulativeData.book_count)
-          : 0,
-      bestYear: bestYearInfo,
-      longestStreak: currentLongestStreak,
-    };
-
-    // --- Reading trends calculation ---
-    const dayCountsTrend: number[] = Array(7).fill(0);
-    calendarData.forEach(
-      (words, dateStr) => (dayCountsTrend[new Date(dateStr).getDay()] += words)
-    );
-    const trendsData = dayNames.map((day, index) => ({
-      day,
-      文字数: dayCountsTrend[index],
-    }));
-
-    return {
-      readingTrendsData: trendsData,
-      comparisonData: finalComparisonData,
-      personalInsightsData: finalPersonalInsightsData,
-      longestStreak: currentLongestStreak,
-    };
-  }, [cumulativeData, calendarData, allMonthlyData, yearlyData]);
+      return {
+        readingTrendsData: trendsData,
+        comparisonData: finalComparisonData,
+        personalInsightsData: finalPersonalInsightsData,
+      };
+    }, [cumulativeData, calendarData, allMonthlyData, yearlyData]);
 
   return (
     <div className="space-y-6">

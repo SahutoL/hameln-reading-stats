@@ -89,8 +89,8 @@ export interface ProcessedData {
   cumulativeData: CumulativeData;
   calendarData: CalendarData;
   levelData: LevelData;
-  // FIX: Add achievementsByCategory to the ProcessedData interface to resolve a type error in App.tsx.
   achievementsByCategory: AchievementCategory[];
+  longestStreak: number;
 }
 
 // For Comparison Stats
@@ -129,7 +129,6 @@ export interface PersonalInsightsData {
     year: number;
     words: number;
   };
-  longestStreak: number;
 }
 
 // For new Achievements system
