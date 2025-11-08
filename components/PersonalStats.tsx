@@ -1,4 +1,3 @@
-
 import React, { useState, useMemo } from 'react';
 import { ProcessedYearlyData } from '../types';
 import { ChevronDownIcon, CrownIcon } from './icons';
@@ -22,7 +21,7 @@ const InlineBar: React.FC<{ percentage: number }> = ({ percentage }) => (
 );
 
 const PersonalStats: React.FC<PersonalStatsProps> = ({ yearlyData }) => {
-    const [expandedYears, setExpandedYears] = useState<Set<number>>(new Set());
+    const [expandedYears, setExpandedYears] = useState<Set<number>>(new Set([yearlyData?.[0]?.year]));
 
     const toggleYear = (year: number) => {
         const newSet = new Set(expandedYears);
@@ -35,6 +34,7 @@ const PersonalStats: React.FC<PersonalStatsProps> = ({ yearlyData }) => {
     };
 
     const processedYearlyData = useMemo(() => {
+        if (!yearlyData) return [];
         const maxYearlyWords = Math.max(0, ...yearlyData.map(y => y.word_count));
         
         return yearlyData.map(yearData => {
@@ -71,7 +71,7 @@ const PersonalStats: React.FC<PersonalStatsProps> = ({ yearlyData }) => {
             {processedYearlyData.map(year => {
                 const isExpanded = expandedYears.has(year.year);
                 return (
-                    <div key={year.year} className="bg-surface/50 rounded-lg border border-gray-700/50 overflow-hidden">
+                    <div key={year.year} className="bg-surface/50 rounded-lg border border-gray-700/50 overflow-hidden transition-all duration-300">
                         <div 
                             className="flex items-center p-4 cursor-pointer hover:bg-surface/80 transition-colors"
                             onClick={() => toggleYear(year.year)}
@@ -81,41 +81,48 @@ const PersonalStats: React.FC<PersonalStatsProps> = ({ yearlyData }) => {
                         >
                             <div className="w-1/5 font-bold text-lg text-on-surface">{year.year}年</div>
                             <div className="w-3/5 px-4 space-y-2">
-                                <div className="text-sm grid grid-cols-4 gap-2 text-gray-300">
+                                <div className="text-sm grid grid-cols-2 md:grid-cols-4 gap-2 text-gray-300">
                                     <div>{year.book_count.toLocaleString()} <span className="text-xs text-gray-500">作品</span></div>
                                     <div>{year.chapter_count.toLocaleString()} <span className="text-xs text-gray-500">話</span></div>
-                                    <div>{year.word_count.toLocaleString()} <span className="text-xs text-gray-500">文字</span></div>
-                                    <div>{year.avgWordsPerDay.toLocaleString()} <span className="text-xs text-gray-500">文字/日</span></div>
+                                    <div className="hidden md:block">{year.word_count.toLocaleString()} <span className="text-xs text-gray-500">文字</span></div>
+                                    <div className="hidden md:block">{year.avgWordsPerDay.toLocaleString()} <span className="text-xs text-gray-500">文字/日</span></div>
                                 </div>
                                 <InlineBar percentage={year.yearlyBarPercentage} />
                             </div>
                             <div className="w-1/5 flex justify-end">
-                                <ChevronDownIcon className={`w-6 h-6 text-gray-400 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
+                                <ChevronDownIcon className={`w-6 h-6 text-gray-400 transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`} />
                             </div>
                         </div>
-                        {isExpanded && (
-                            <div id={`details-${year.year}`} className="bg-surface/30 px-4 pb-2 animate-fade-in">
-                                <div className="divide-y divide-gray-700/50">
-                                    {year.monthly_data.map(month => (
-                                        <div key={month.month} className="flex items-center py-3">
-                                            <div className="w-1/5 flex items-center gap-2 pl-2">
-                                                {month.isBest && <CrownIcon className="w-5 h-5 text-yellow-400" />}
-                                                <span className="font-semibold text-gray-300">{monthNames[month.month]}</span>
-                                            </div>
-                                            <div className="w-4/5 px-4 space-y-2">
-                                                 <div className="text-xs grid grid-cols-4 gap-2 text-gray-400">
-                                                    <div>{month.book_count.toLocaleString()} <span className="text-gray-500">作品</span></div>
-                                                    <div>{month.chapter_count.toLocaleString()} <span className="text-gray-500">話</span></div>
-                                                    <div>{month.word_count.toLocaleString()} <span className="text-gray-500">文字</span></div>
-                                                    <div>{month.avgWordsPerDay.toLocaleString()} <span className="text-gray-500">文字/日</span></div>
+                        <div
+                            className={`transition-all duration-500 ease-in-out grid ${isExpanded ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'}`}
+                        >
+                            <div id={`details-${year.year}`} className="overflow-hidden">
+                                <div className="bg-surface/30 px-4 pb-2 pt-2 border-t border-gray-700/50">
+                                    <div className="divide-y divide-gray-700/50">
+                                        {year.monthly_data.map(month => (
+                                            <div key={month.month} className="flex items-center py-3">
+                                                <div className="w-1/5 flex items-center gap-2 pl-2">
+                                                    {
+                                                        // FIX: The 'title' prop was causing a TypeScript error on CrownIcon. Wrapped it in a span to provide the tooltip.
+                                                    }
+                                                    {month.isBest && <span title="この年のベストパフォーマンス月"><CrownIcon className="w-5 h-5 text-yellow-400 flex-shrink-0" /></span>}
+                                                    <span className="font-semibold text-gray-300">{monthNames[month.month]}</span>
                                                 </div>
-                                                <InlineBar percentage={year.maxMonthlyWords > 0 ? (month.word_count / year.maxMonthlyWords) * 100 : 0} />
+                                                <div className="w-4/5 px-4 space-y-2">
+                                                     <div className="text-xs grid grid-cols-2 md:grid-cols-4 gap-2 text-gray-400">
+                                                        <div>{month.book_count.toLocaleString()} <span className="text-gray-500">作品</span></div>
+                                                        <div>{month.chapter_count.toLocaleString()} <span className="text-gray-500">話</span></div>
+                                                        <div className="hidden md:block">{month.word_count.toLocaleString()} <span className="text-gray-500">文字</span></div>
+                                                        <div className="hidden md:block">{month.avgWordsPerDay.toLocaleString()} <span className="text-gray-500">文字/日</span></div>
+                                                    </div>
+                                                    <InlineBar percentage={year.maxMonthlyWords > 0 ? (month.word_count / year.maxMonthlyWords) * 100 : 0} />
+                                                </div>
                                             </div>
-                                        </div>
-                                    ))}
+                                        ))}
+                                    </div>
                                 </div>
                             </div>
-                        )}
+                        </div>
                     </div>
                 );
             })}

@@ -1,4 +1,3 @@
-
 import React from 'react';
 
 export const UserIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
@@ -132,8 +131,8 @@ export const ArrowDownIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) =>
 );
 
 export const CrownIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
-    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" {...props}>
-      <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 18.75h-9a9 9 0 1 1 9 0Zm-9 0a9 9 0 0 0 9 0m-9 0h9m-9 0H3.375a1.125 1.125 0 0 1-1.125-1.125V14.25m17.25 4.5h-1.125a1.125 1.125 0 0 1-1.125-1.125V14.25m-14.25 0V9a2.25 2.25 0 0 1 2.25-2.25h1.5a2.25 2.25 0 0 1 2.25 2.25v2.25m1.5-3.75V9a2.25 2.25 0 0 1 2.25-2.25h1.5a2.25 2.25 0 0 1 2.25 2.25v2.25" />
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" {...props}>
+      <path fillRule="evenodd" d="M18 8.25a.75.75 0 0 1 .75.75v3.75a.75.75 0 0 1-1.5 0V9.538l-4.01 3.008a.75.75 0 0 1-.98 0l-4.01-3.008V12.75a.75.75 0 0 1-1.5 0V9A.75.75 0 0 1 6 8.25h12ZM12 15a.75.75 0 0 1-.75-.75V12.36l-4.322 3.242a.75.75 0 0 0-.278 1.034l1.5 2.25a.75.75 0 0 0 .98.434l3.842-1.921 3.842 1.921a.75.75 0 0 0 .98-.434l1.5-2.25a.75.75 0 0 0-.278-1.034L12.75 12.36V14.25A.75.75 0 0 1 12 15Z" clipRule="evenodd" />
     </svg>
 );
 
