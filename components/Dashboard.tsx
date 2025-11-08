@@ -33,6 +33,7 @@ import {
 } from "./icons";
 import { ACHIEVEMENT_DEFINITIONS } from "./achievementDefinitions";
 import LevelProgress from "./LevelProgress";
+import Roadmap from "./Roadmap";
 
 interface DashboardProps {
   processedData: ProcessedData;
@@ -432,6 +433,10 @@ const Dashboard: React.FC<DashboardProps> = ({ processedData }) => {
           <PersonalStats yearlyData={yearlyData} />
         </Card>
       </div>
+
+      <Card>
+        <Roadmap />
+      </Card>
     </div>
   );
 };
