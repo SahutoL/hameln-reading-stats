@@ -1,4 +1,4 @@
-const CACHE_NAME = 'hameln-reading-stats-v2'; // Cache version updated
+const CACHE_NAME = 'hameln-reading-stats-v2.1';
 const urlsToCache = [
   '/',
   '/index.html',
