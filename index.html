@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    
+    <!-- SEO & Metadata -->
+    <title>Hameln Reading Stats | あなたの読書体験を可視化</title>
+    <meta name="description" content="小説投稿サイト「ハーメルン」の読書データを連携し、あなたの読書傾向を美しいグラフや統計で可視化します。目標設定や実績機能で、読書をもっと楽しく、もっと豊かに。"/>
+    <meta name="theme-color" content="#121212">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Hameln Reading Stats | あなたの読書体験を可視化">
+    <meta property="og:description" content="あなたの読書傾向を美しいグラフや統計で可視化し、新たな発見を楽しみましょう。">
+    
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary">
+    <meta property="twitter:title" content="Hameln Reading Stats | あなたの読書体験を可視化">
+    <meta property="twitter:description" content="あなたの読書傾向を美しいグラフや統計で可視化し、新たな発見を楽しみましょう。">
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              'background': '#121212',
+              'surface': '#1e1e1e',
+              'surface-glass': 'rgba(30, 30, 30, 0.5)', // For glassmorphism
+              'primary': '#bb86fc',
+              'primary-variant': '#3700b3',
+              'secondary': '#03dac6',
+              'on-background': '#e0e0e0',
+              'on-surface': '#ffffff',
+            },
+          },
+        },
+      }
+    </script>
+    <style>
+      /* Custom Animations */
+      @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      .animate-fade-in {
+        animation: fadeIn 0.5s ease-out forwards;
+      }
+      /* Custom Scrollbar */
+      ::-webkit-scrollbar {
+        width: 8px;
+      }
+      ::-webkit-scrollbar-track {
+        background: #1e1e1e;
+      }
+      ::-webkit-scrollbar-thumb {
+        background-color: #bb86fc;
+        border-radius: 4px;
+        border: 2px solid #1e1e1e;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background-color: #9f63e4;
+      }
+    </style>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/recharts@2.12.7/umd/Recharts.min.js"></script>
+  <script type="importmap">
+{
+  "imports": {
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+    "react/": "https://aistudiocdn.com/react@^19.2.0/",
+    "react": "https://aistudiocdn.com/react@^19.2.0",
+    "recharts": "https://aistudiocdn.com/recharts@^3.3.0",
+    "react-dom": "https://aistudiocdn.com/react-dom@^19.2.0"
+  }
+}
+</script>
+</head>
+  <body class="bg-background text-on-background">
+    <div id="root"></div>
+    <script type="module" src="/index.tsx"></script>
+  </body>
+</html>
