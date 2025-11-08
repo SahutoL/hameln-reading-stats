@@ -12,12 +12,13 @@ import Login from "./components/Login";
 import Dashboard from "./components/Dashboard";
 import Spinner from "./components/Spinner";
 import ErrorMessage from "./components/ErrorMessage";
-import { LogoIcon } from "./components/icons";
 import LandingPage from "./components/LandingPage";
 import Modal from "./components/Modal";
 import TermsOfService from "./components/TermsOfService";
 import PrivacyPolicy from "./components/PrivacyPolicy";
 import { calculateLevelData } from "./utils/levelHelper";
+import Sidebar from "./components/Sidebar";
+import Header from "./components/Header";
 
 // 3 days ago filter
 const getFilteredData = (
@@ -78,6 +79,7 @@ const App: React.FC = () => {
   const [modalContent, setModalContent] = useState<"terms" | "privacy" | null>(
     null
   );
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const handleLoginSuccess = (newToken: string) => {
     localStorage.setItem("hameln_token", newToken);
@@ -114,7 +116,6 @@ const App: React.FC = () => {
       const isCacheValidAndRecent =
         cachedData && lastFetch && Date.now() - lastFetch < threeDays;
 
-      // 1. If valid, recent cache exists, use it and skip API calls.
       if (isCacheValidAndRecent) {
         console.log("Using recent cache. No API fetch needed.");
         setReadingData(cachedData);
@@ -122,21 +123,17 @@ const App: React.FC = () => {
         return;
       }
 
-      // Display stale data first if available, while fetching in the background.
       if (cachedData) {
         setReadingData(cachedData);
       }
 
-      // 2. If no cache exists, perform initial full fetch.
       if (!cachedData) {
         console.log("No cache found. Performing initial full data fetch...");
         const data = await hamelnApiService.getReadingData(token);
         setReadingData(data);
         localStorage.setItem("cachedReadingData", JSON.stringify(data));
         localStorage.setItem("lastFetchTimestamp", Date.now().toString());
-      }
-      // 3. If cache is stale, perform a partial update for the last two months.
-      else {
+      } else {
         console.log(
           "Cache is stale. Performing partial update for recent months..."
         );
@@ -158,7 +155,6 @@ const App: React.FC = () => {
           hamelnApiService.getMonthReadingData(token, prevMonthYear, prevMonth),
         ]);
 
-        // Merge new data into a deep copy of the old cached data.
         const updatedData = JSON.parse(JSON.stringify(cachedData));
 
         if (
@@ -199,7 +195,6 @@ const App: React.FC = () => {
 
   useEffect(() => {
     if (token) {
-      // If token exists, user is logged in
       setView("app");
       fetchReadingData();
     } else {
@@ -295,106 +290,98 @@ const App: React.FC = () => {
   }, [filteredReadingData]);
 
   const renderContent = () => {
-    if (!token) {
+    if (view === "landing" && !token) {
       return (
-        <Login
-          onLoginSuccess={handleLoginSuccess}
-          onOpenModal={setModalContent}
-        />
-      );
-    }
-
-    if (isLoading && !readingData) {
-      return (
-        <div className="flex flex-col items-center justify-center min-h-screen">
-          <Spinner />
-          <p className="mt-4 text-lg">読書データを取得中...</p>
+        <div className="flex flex-col min-h-screen aurora-background">
+          <header className="p-4 bg-transparent fixed top-0 left-0 right-0 z-10">
+            <div className="container mx-auto flex items-center justify-end">
+              <button
+                onClick={() => setView("app")}
+                className="px-5 py-2 text-sm font-medium text-white bg-primary/80 rounded-full hover:bg-primary transition-colors backdrop-blur-sm"
+              >
+                ログイン
+              </button>
+            </div>
+          </header>
+          <main className="flex-grow">
+            <LandingPage onStart={() => setView("app")} />
+          </main>
         </div>
       );
     }
 
-    if (error) {
-      return <ErrorMessage message={error} onRetry={fetchReadingData} />;
+    if (!token) {
+      return (
+        <div className="min-h-screen flex flex-col items-center justify-center aurora-background p-4">
+          <Login
+            onLoginSuccess={handleLoginSuccess}
+            onOpenModal={setModalContent}
+          />
+        </div>
+      );
     }
 
-    if (processedData) {
-      return <Dashboard processedData={processedData} />;
-    }
-
-    // This case handles when there is a token, but no data yet (e.g., initial load after login)
     return (
-      <div
-        className="flex flex-col items-center justify-center"
-        style={{ minHeight: "calc(100vh - 200px)" }}
-      >
-        <Spinner />
-        <p className="mt-4 text-lg">データを準備中...</p>
+      <div className="flex h-screen aurora-background font-sans">
+        {isSidebarOpen && (
+          <div
+            onClick={() => setIsSidebarOpen(false)}
+            className="fixed inset-0 bg-black/60 z-30 lg:hidden"
+            aria-hidden="true"
+          ></div>
+        )}
+        <Sidebar
+          isOpen={isSidebarOpen}
+          onClose={() => setIsSidebarOpen(false)}
+          onLogout={handleLogout}
+        />
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <Header onMenuClick={() => setIsSidebarOpen(true)} />
+          <div className="flex-1 overflow-y-auto">
+            <main className="flex-grow container mx-auto p-4 md:p-6">
+              {isLoading && !readingData && (
+                <div className="flex flex-col items-center justify-center h-full">
+                  <Spinner />
+                  <p className="mt-4 text-lg">読書データを取得中...</p>
+                </div>
+              )}
+              {error && (
+                <ErrorMessage message={error} onRetry={fetchReadingData} />
+              )}
+              {processedData && <Dashboard processedData={processedData} />}
+            </main>
+            <footer className="w-full bg-transparent py-4 mt-auto">
+              <div className="container mx-auto text-center text-gray-500 text-sm">
+                <p>
+                  &copy; {new Date().getFullYear()} Hameln Reading Stats. All
+                  Rights Reserved.
+                </p>
+                <div className="mt-2 space-x-4">
+                  <button
+                    onClick={() => setModalContent("terms")}
+                    className="hover:text-primary transition-colors"
+                  >
+                    利用規約
+                  </button>
+                  <span>|</span>
+                  <button
+                    onClick={() => setModalContent("privacy")}
+                    className="hover:text-primary transition-colors"
+                  >
+                    プライバシーポリシー
+                  </button>
+                </div>
+              </div>
+            </footer>
+          </div>
+        </div>
       </div>
     );
   };
 
   return (
-    <div className="min-h-screen bg-background font-sans flex flex-col">
-      <header className="p-4 bg-surface/30 backdrop-blur-sm sticky top-0 z-10 border-b border-gray-700/50">
-        <div className="container mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <LogoIcon className="h-8 w-8 text-primary" />
-            <h1 className="text-xl md:text-2xl font-bold text-on-surface">
-              Hameln Reading Stats
-            </h1>
-          </div>
-          {token ? (
-            <button
-              onClick={handleLogout}
-              className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-300 bg-surface/50 rounded-md hover:bg-red-500/20 hover:text-red-400 transition-colors border border-gray-700"
-            >
-              <span>ログアウト</span>
-            </button>
-          ) : (
-            <button
-              onClick={() => setView("app")}
-              className="px-4 py-2 text-sm font-medium text-white bg-primary-variant rounded-md hover:bg-primary transition-colors"
-            >
-              始める
-            </button>
-          )}
-        </div>
-      </header>
-
-      <div className="flex-grow">
-        {view === "landing" && !token ? (
-          <LandingPage onStart={() => setView("app")} />
-        ) : (
-          <main className="container mx-auto p-4 md:p-6">
-            {renderContent()}
-          </main>
-        )}
-      </div>
-
-      <footer className="w-full bg-surface/30 border-t border-gray-700/50 py-4">
-        <div className="container mx-auto text-center text-gray-500 text-sm">
-          <p>
-            &copy; {new Date().getFullYear()} Hameln Reading Stats. All Rights
-            Reserved.
-          </p>
-          <div className="mt-2 space-x-4">
-            <button
-              onClick={() => setModalContent("terms")}
-              className="hover:text-primary transition-colors"
-            >
-              利用規約
-            </button>
-            <span>|</span>
-            <button
-              onClick={() => setModalContent("privacy")}
-              className="hover:text-primary transition-colors"
-            >
-              プライバシーポリシー
-            </button>
-          </div>
-        </div>
-      </footer>
-
+    <>
+      {renderContent()}
       <Modal
         isOpen={modalContent !== null}
         onClose={() => setModalContent(null)}
@@ -403,7 +390,7 @@ const App: React.FC = () => {
         {modalContent === "terms" && <TermsOfService />}
         {modalContent === "privacy" && <PrivacyPolicy />}
       </Modal>
-    </div>
+    </>
   );
 };
 

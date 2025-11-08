@@ -33,9 +33,9 @@
         theme: {
           extend: {
             colors: {
-              'background': '#121212',
-              'surface': '#1e1e1e',
-              'surface-glass': 'rgba(30, 30, 30, 0.5)', // For glassmorphism
+              'background': '#0f0f14', // Slightly bluer black
+              'surface': '#1e1e24',
+              'surface-glass': 'rgba(30, 30, 36, 0.5)', 
               'primary': '#bb86fc',
               'primary-variant': '#3700b3',
               'secondary': '#03dac6',
@@ -46,7 +46,20 @@
         },
       }
     </script>
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3540900632101010" crossorigin="anonymous"></script>
     <style>
+      /* Aurora Background Animation */
+      @keyframes aurora-animation {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+      }
+      .aurora-background {
+        background: linear-gradient(-45deg, #0f0f14, #120c1e, #0c1a1e, #1e0c1a);
+        background-size: 400% 400%;
+        animation: aurora-animation 30s ease infinite;
+      }
+
       /* Custom Animations */
       @keyframes fadeIn {
         from { opacity: 0; transform: translateY(10px); }
@@ -55,20 +68,23 @@
       .animate-fade-in {
         animation: fadeIn 0.5s ease-out forwards;
       }
-      /* Custom Scrollbar */
+      /* Refined Scrollbar */
       ::-webkit-scrollbar {
-        width: 8px;
+        width: 10px;
+        height: 10px;
       }
       ::-webkit-scrollbar-track {
-        background: #1e1e1e;
+        background: rgba(0, 0, 0, 0.2);
+        border-radius: 10px;
       }
       ::-webkit-scrollbar-thumb {
-        background-color: #bb86fc;
-        border-radius: 4px;
-        border: 2px solid #1e1e1e;
+        background: rgba(187, 134, 252, 0.3);
+        border-radius: 10px;
+        border: 2px solid transparent;
+        background-clip: content-box;
       }
       ::-webkit-scrollbar-thumb:hover {
-        background-color: #9f63e4;
+        background: rgba(187, 134, 252, 0.5);
       }
     </style>
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
@@ -93,7 +109,6 @@
 
   gtag('config', 'G-ZX46S1R8D1');
 </script>
-<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3540900632101010" crossorigin="anonymous"></script>
 </head>
   <body class="bg-background text-on-background">
     <div id="root"></div>

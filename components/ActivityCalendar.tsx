@@ -70,7 +70,7 @@ const ActivityCalendar: React.FC<ActivityCalendarProps> = ({ data }) => {
           let tooltipHPosition = "left-1/2 -translate-x-1/2";
 
           // Adjust for the first few columns to prevent left overflow
-          if (column < 3) {
+          if (column < 4) {
             tooltipHPosition = "left-0";
           }
           // Adjust for the last few columns to prevent right overflow

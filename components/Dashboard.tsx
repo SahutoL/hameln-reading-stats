@@ -39,6 +39,26 @@ interface DashboardProps {
   processedData: ProcessedData;
 }
 
+const AnimatedCard: React.FC<{
+  children: React.ReactNode;
+  className?: string;
+  delay?: number;
+}> = ({ children, className = "", delay = 0 }) => {
+  const style = {
+    animationDelay: `${delay}ms`,
+    animationFillMode: "backwards",
+  } as React.CSSProperties;
+
+  return (
+    <div
+      style={style}
+      className={`bg-surface-glass backdrop-blur-xl border border-white/10 rounded-2xl shadow-lg p-4 md:p-6 animate-fade-in ${className}`}
+    >
+      {children}
+    </div>
+  );
+};
+
 const Dashboard: React.FC<DashboardProps> = ({ processedData }) => {
   const {
     allMonthlyData,
@@ -312,24 +332,19 @@ const Dashboard: React.FC<DashboardProps> = ({ processedData }) => {
     };
   }, [cumulativeData, calendarData, allMonthlyData, yearlyData]);
 
-  const Card: React.FC<{ children: React.ReactNode; className?: string }> = ({
-    children,
-    className = "",
-  }) => (
-    <div
-      className={`bg-surface-glass backdrop-blur-md border border-gray-700/50 rounded-xl shadow-lg p-4 md:p-6 ${className}`}
-    >
-      {children}
-    </div>
-  );
-
   return (
-    <div className="space-y-6 animate-fade-in">
-      <h1 className="text-2xl md:text-3xl font-bold text-on-surface">
-        読書データダッシュボード
-      </h1>
+    <div className="space-y-6">
+      <div className="animate-fade-in">
+        <h1 className="text-3xl md:text-4xl font-bold text-on-surface">
+          ダッシュボード
+        </h1>
+        <p className="text-gray-400 mt-1">あなたの読書活動の概要</p>
+      </div>
 
-      <div className="flex items-center gap-2 text-sm text-gray-400 bg-surface/50 p-3 rounded-lg border border-gray-700/50">
+      <div
+        className="flex items-center gap-2 text-sm text-gray-400 bg-surface/50 p-3 rounded-xl border border-white/10 animate-fade-in"
+        style={{ animationDelay: "100ms" }}
+      >
         <InformationCircleIcon className="w-5 h-5 text-primary" />
         <span>
           ※このダッシュボードに表示されるデータは、読書データAPIの仕様に基づき、約3日前のものとなります。
@@ -338,105 +353,131 @@ const Dashboard: React.FC<DashboardProps> = ({ processedData }) => {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatCard
+          delay={200}
           title="累計読了作品数"
           value={cumulativeData.book_count.toLocaleString()}
-          icon={<BookIcon className="w-8 h-8 text-primary" />}
+          icon={<BookIcon className="w-7 h-7 text-primary" />}
           unit="作品"
+          accentColor="bg-primary"
         />
         <StatCard
+          delay={300}
           title="累計読了話数"
           value={cumulativeData.chapter_count.toLocaleString()}
-          icon={<ChapterIcon className="w-8 h-8 text-secondary" />}
+          icon={<ChapterIcon className="w-7 h-7 text-secondary" />}
           unit="話"
+          accentColor="bg-secondary"
         />
         <StatCard
+          delay={400}
           title="累計読了文字数"
           value={cumulativeData.word_count.toLocaleString()}
-          icon={<WordIcon className="w-8 h-8 text-yellow-400" />}
+          icon={<WordIcon className="w-7 h-7 text-yellow-400" />}
           unit="文字"
+          accentColor="bg-yellow-400"
         />
         <StatCard
+          delay={500}
           title="最長連続読書日数"
           value={longestStreak.toLocaleString()}
-          icon={<CalendarIcon className="w-8 h-8 text-red-400" />}
+          icon={<CalendarIcon className="w-7 h-7 text-red-400" />}
           unit="日"
+          accentColor="bg-red-400"
         />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card className="flex flex-col">
-          <LevelProgress data={levelData} />
-        </Card>
-        <Card className="flex flex-col">
-          <ReadingGoal monthlyData={allMonthlyData} />
-        </Card>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <ComparisonStats data={comparisonData} />
-        <PersonalInsights data={personalInsightsData} />
-      </div>
-
-      <Card>
-        <h2 className="text-xl md:text-2xl font-bold text-on-surface mb-4">
-          月間読書量推移 (直近12ヶ月)
-        </h2>
-        <div className="h-80">
-          <ResponsiveContainer width="100%" height="100%">
-            <BarChart
-              data={chartData}
-              margin={{ top: 5, right: 20, left: 10, bottom: 5 }}
-            >
-              <CartesianGrid strokeDasharray="3 3" stroke="#444" />
-              <XAxis dataKey="name" stroke="#9ca3af" fontSize={12} />
-              <YAxis
-                yAxisId="left"
-                orientation="left"
-                stroke="#9ca3af"
-                fontSize={12}
-                tickFormatter={(value) => `${Number(value) / 1000}k`}
-              />
-              <Tooltip
-                contentStyle={{
-                  backgroundColor: "#2d2d2d",
-                  border: "1px solid #555",
-                  color: "#fff",
-                }}
-                formatter={(value: number) => value.toLocaleString()}
-              />
-              <Legend />
-              <Bar yAxisId="left" dataKey="文字数" fill="#bb86fc" />
-            </BarChart>
-          </ResponsiveContainer>
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <div className="lg:col-span-8">
+          <AnimatedCard delay={600}>
+            <h2 className="text-xl md:text-2xl font-bold text-on-surface mb-4">
+              月間読書量推移 (直近12ヶ月)
+            </h2>
+            <div className="h-96">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart
+                  data={chartData}
+                  margin={{ top: 5, right: 20, left: 10, bottom: 5 }}
+                >
+                  <defs>
+                    <linearGradient id="colorUv" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#bb86fc" stopOpacity={0.8} />
+                      <stop
+                        offset="95%"
+                        stopColor="#bb86fc"
+                        stopOpacity={0.2}
+                      />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#ffffff20" />
+                  <XAxis dataKey="name" stroke="#9ca3af" fontSize={12} />
+                  <YAxis
+                    yAxisId="left"
+                    orientation="left"
+                    stroke="#9ca3af"
+                    fontSize={12}
+                    tickFormatter={(value) => `${Number(value) / 1000}k`}
+                  />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: "rgba(30, 30, 36, 0.8)",
+                      border: "1px solid #ffffff20",
+                      color: "#fff",
+                      borderRadius: "12px",
+                    }}
+                    formatter={(value: number) => value.toLocaleString()}
+                  />
+                  <Legend />
+                  <Bar yAxisId="left" dataKey="文字数" fill="url(#colorUv)" />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </AnimatedCard>
         </div>
-      </Card>
+        <div className="lg:col-span-4 flex flex-col gap-6">
+          <AnimatedCard delay={700} className="flex-1 flex flex-col">
+            <LevelProgress data={levelData} />
+          </AnimatedCard>
+          <AnimatedCard delay={800} className="flex-1 flex flex-col">
+            <ReadingGoal monthlyData={allMonthlyData} />
+          </AnimatedCard>
+        </div>
+      </div>
 
-      <Card>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <AnimatedCard delay={900}>
+          <ComparisonStats data={comparisonData} />
+        </AnimatedCard>
+        <AnimatedCard delay={1000}>
+          <PersonalInsights data={personalInsightsData} />
+        </AnimatedCard>
+      </div>
+
+      <AnimatedCard delay={1100}>
         <h2 className="text-xl md:text-2xl font-bold text-on-surface mb-4">
           アクティビティカレンダー (直近1年)
         </h2>
         <ActivityCalendar data={calendarData} />
-      </Card>
+      </AnimatedCard>
 
-      <Card>
+      <AnimatedCard delay={1200}>
         <Achievements achievementsByCategory={achievementsByCategory} />
-      </Card>
+      </AnimatedCard>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card>
+        <AnimatedCard delay={1300}>
           <ReadingTrends data={readingTrendsData} />
-        </Card>
-        <Card>
+        </AnimatedCard>
+        <AnimatedCard delay={1400}>
           <h2 className="text-xl md:text-2xl font-bold text-on-surface mb-4">
             個人データ詳細
           </h2>
           <PersonalStats yearlyData={yearlyData} />
-        </Card>
+        </AnimatedCard>
       </div>
 
-      <Card>
+      <AnimatedCard delay={1500}>
         <Roadmap />
-      </Card>
+      </AnimatedCard>
     </div>
   );
 };
