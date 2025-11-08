@@ -81,11 +81,23 @@ const PersonalStats: React.FC<PersonalStatsProps> = ({ yearlyData }) => {
                         >
                             <div className="w-1/5 font-bold text-lg text-on-surface">{year.year}年</div>
                             <div className="w-3/5 px-4 space-y-2">
-                                <div className="text-sm grid grid-cols-2 md:grid-cols-4 gap-2 text-gray-300">
-                                    <div>{year.book_count.toLocaleString()} <span className="text-xs text-gray-500">作品</span></div>
-                                    <div>{year.chapter_count.toLocaleString()} <span className="text-xs text-gray-500">話</span></div>
-                                    <div className="hidden md:block">{year.word_count.toLocaleString()} <span className="text-xs text-gray-500">文字</span></div>
-                                    <div className="hidden md:block">{year.avgWordsPerDay.toLocaleString()} <span className="text-xs text-gray-500">文字/日</span></div>
+                                <div className="grid grid-cols-2 md:grid-cols-4 gap-x-4 text-gray-300">
+                                    <div>
+                                        <div className="text-sm font-semibold text-on-surface">{year.book_count.toLocaleString()}</div>
+                                        <div className="text-xs text-gray-500">作品</div>
+                                    </div>
+                                    <div>
+                                        <div className="text-sm font-semibold text-on-surface">{year.chapter_count.toLocaleString()}</div>
+                                        <div className="text-xs text-gray-500">話</div>
+                                    </div>
+                                    <div className="hidden md:block">
+                                        <div className="text-sm font-semibold text-on-surface">{year.word_count.toLocaleString()}</div>
+                                        <div className="text-xs text-gray-500">文字</div>
+                                    </div>
+                                    <div className="hidden md:block">
+                                        <div className="text-sm font-semibold text-on-surface">{year.avgWordsPerDay.toLocaleString()}</div>
+                                        <div className="text-xs text-gray-500">文字/日</div>
+                                    </div>
                                 </div>
                                 <InlineBar percentage={year.yearlyBarPercentage} />
                             </div>
@@ -102,18 +114,27 @@ const PersonalStats: React.FC<PersonalStatsProps> = ({ yearlyData }) => {
                                         {year.monthly_data.map(month => (
                                             <div key={month.month} className="flex items-center py-3">
                                                 <div className="w-1/5 flex items-center gap-2 pl-2">
-                                                    {
-                                                        // FIX: The 'title' prop was causing a TypeScript error on CrownIcon. Wrapped it in a span to provide the tooltip.
-                                                    }
                                                     {month.isBest && <span title="この年のベストパフォーマンス月"><CrownIcon className="w-5 h-5 text-yellow-400 flex-shrink-0" /></span>}
                                                     <span className="font-semibold text-gray-300">{monthNames[month.month]}</span>
                                                 </div>
                                                 <div className="w-4/5 px-4 space-y-2">
-                                                     <div className="text-xs grid grid-cols-2 md:grid-cols-4 gap-2 text-gray-400">
-                                                        <div>{month.book_count.toLocaleString()} <span className="text-gray-500">作品</span></div>
-                                                        <div>{month.chapter_count.toLocaleString()} <span className="text-gray-500">話</span></div>
-                                                        <div className="hidden md:block">{month.word_count.toLocaleString()} <span className="text-gray-500">文字</span></div>
-                                                        <div className="hidden md:block">{month.avgWordsPerDay.toLocaleString()} <span className="text-gray-500">文字/日</span></div>
+                                                     <div className="grid grid-cols-2 md:grid-cols-4 gap-x-4 text-gray-400">
+                                                        <div>
+                                                            <div className="text-xs font-semibold text-on-surface">{month.book_count.toLocaleString()}</div>
+                                                            <div className="text-xs text-gray-500">作品</div>
+                                                        </div>
+                                                        <div>
+                                                            <div className="text-xs font-semibold text-on-surface">{month.chapter_count.toLocaleString()}</div>
+                                                            <div className="text-xs text-gray-500">話</div>
+                                                        </div>
+                                                        <div className="hidden md:block">
+                                                            <div className="text-xs font-semibold text-on-surface">{month.word_count.toLocaleString()}</div>
+                                                            <div className="text-xs text-gray-500">文字</div>
+                                                        </div>
+                                                        <div className="hidden md:block">
+                                                            <div className="text-xs font-semibold text-on-surface">{month.avgWordsPerDay.toLocaleString()}</div>
+                                                            <div className="text-xs text-gray-500">文字/日</div>
+                                                        </div>
                                                     </div>
                                                     <InlineBar percentage={year.maxMonthlyWords > 0 ? (month.word_count / year.maxMonthlyWords) * 100 : 0} />
                                                 </div>
