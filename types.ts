@@ -1,4 +1,3 @@
-
 export interface TokenResponse {
   access_token: string;
   token_type: string;
@@ -48,17 +47,17 @@ export interface ApiErrorResponse {
 }
 
 export interface ProcessedYearlyData {
-    year: number;
-    book_count: number;
-    chapter_count: number;
-    word_count: number;
-    monthly_data: MonthlyData[];
+  year: number;
+  book_count: number;
+  chapter_count: number;
+  word_count: number;
+  monthly_data: MonthlyData[];
 }
 
 export interface CumulativeData {
-    book_count: number;
-    chapter_count: number;
-    word_count: number;
+  book_count: number;
+  chapter_count: number;
+  word_count: number;
 }
 
 // For Reading Goal
@@ -70,12 +69,23 @@ export interface ReadingGoal {
 // For Activity Calendar
 export type CalendarData = Map<string, number>; // Map from "YYYY-MM-DD" to word_count
 
+// For Level System
+export interface LevelData {
+  level: number;
+  progress: number; // 0 to 100
+  currentLevelExp: number; // Total EXP required to reach the current level
+  totalExpForNextLevel: number; // Total EXP required to reach the next level
+  expIntoCurrentLevel: number; // EXP gained since the last level up
+  requiredExpForNextLevel: number; // EXP needed to get from current level to next
+}
+
 // For Dashboard Prop
 export interface ProcessedData {
-    allMonthlyData: MonthlyData[];
-    yearlyData: ProcessedYearlyData[];
-    cumulativeData: CumulativeData;
-    calendarData: CalendarData;
+  allMonthlyData: MonthlyData[];
+  yearlyData: ProcessedYearlyData[];
+  cumulativeData: CumulativeData;
+  calendarData: CalendarData;
+  levelData: LevelData;
 }
 
 // For Comparison Stats
@@ -84,19 +94,19 @@ export interface ComparisonData {
     current: number;
     previous: number;
     percentage: number;
-    direction: 'up' | 'down' | 'same';
+    direction: "up" | "down" | "same";
   };
   yearly: {
     current: number;
     previous: number;
     percentage: number;
-    direction: 'up' | 'down' | 'same';
+    direction: "up" | "down" | "same";
   };
   last30days: {
     current: number;
     previous: number;
     percentage: number;
-    direction: 'up' | 'down' | 'same';
+    direction: "up" | "down" | "same";
   };
 }
 
@@ -114,6 +124,7 @@ export interface PersonalInsightsData {
     year: number;
     words: number;
   };
+  longestStreak: number;
 }
 
 // For new Achievements system
