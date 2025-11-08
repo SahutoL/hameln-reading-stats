@@ -31,46 +31,36 @@ self.addEventListener('install', event => {
 
 // リクエストへの応答処理
 self.addEventListener('fetch', event => {
-  // APIリクエストは常にネットワークから取得する
+  const url = new URL(event.request.url);
+
+  // manifest や icons はネットワーク優先
+  if (url.pathname.endsWith('/manifest.json') || url.pathname.match(/^\/icon-.*\.png$/)) {
+    event.respondWith(
+      fetch(event.request).catch(() => caches.match(event.request))
+    );
+    return;
+  }
+
+  // API はネットワーク、その他はキャッシュファースト
   if (event.request.url.includes('/api/')) {
     event.respondWith(fetch(event.request));
     return;
   }
 
-  // Use a cache-first strategy, but update cache on network fetch
   event.respondWith(
     caches.match(event.request)
-      .then(response => {
-        // Cache hit - return response
-        if (response) {
-          return response;
-        }
-
-        // Not in cache - fetch from network
-        return fetch(event.request).then(
-          networkResponse => {
-            // Check if we received a valid response
-            if (!networkResponse || networkResponse.status !== 200 || event.request.method !== 'GET') {
-              return networkResponse;
-            }
-
-            // Clone the response because it's a stream and can only be consumed once.
-            const responseToCache = networkResponse.clone();
-
-            caches.open(CACHE_NAME)
-              .then(cache => {
-                cache.put(event.request, responseToCache);
-              });
-
+      .then(response => response || fetch(event.request).then(networkResponse => {
+          if (!networkResponse || networkResponse.status !== 200 || event.request.method !== 'GET') {
             return networkResponse;
           }
-        );
-      }
-    ).catch(error => {
-        console.error('Fetch failed; returning offline page instead.', error);
-    })
+          const responseToCache = networkResponse.clone();
+          caches.open(CACHE_NAME).then(cache => cache.put(event.request, responseToCache));
+          return networkResponse;
+      }))
+      .catch(err => console.error(err))
   );
 });
+
 
 // 古いキャッシュの削除処理 & 新しいSWでページを即時制御
 self.addEventListener('activate', event => {

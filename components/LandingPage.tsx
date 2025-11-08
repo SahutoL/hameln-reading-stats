@@ -47,8 +47,8 @@ const LandingPage: React.FC<LandingPageProps> = ({ onStart }) => {
             <Feature icon={<BadgeCheckIcon className="w-12 h-12" />} title="実績システム">
               「累計100万文字読了」などの目標を達成すると実績をアンロック。ゲーミフィケーション要素で読書のモチベーションを高めます。
             </Feature>
-            <Feature icon={<KeyIcon className="w-12 h-12" />} title="簡単・安全な連携">
-              ハーメルンのアカウント情報を入力するだけで、安全に読書データを連携。複雑な設定は一切不要で、すぐに利用を開始できます。
+            <Feature icon={<KeyIcon className="w-12 h-12" />} title="簡単な連携">
+              ハーメルンのアカウント情報を入力するだけで、簡単に読書データを連携。複雑な設定は一切不要で、すぐに利用を開始できます。
             </Feature>
           </div>
         </div>
