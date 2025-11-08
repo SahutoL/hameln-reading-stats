@@ -58,7 +58,7 @@ const getFilteredData = (data: ReadingDataResponse | null): ReadingDataResponse 
 
 
 const App: React.FC = () => {
-  const [token, setToken] = useState<string | null>(sessionStorage.getItem('hameln_token'));
+  const [token, setToken] = useState<string | null>(localStorage.getItem('hameln_token'));
   const [readingData, setReadingData] = useState<ReadingDataResponse | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
@@ -66,7 +66,7 @@ const App: React.FC = () => {
   const [modalContent, setModalContent] = useState<'terms' | 'privacy' | null>(null);
 
   const handleLoginSuccess = (newToken: string) => {
-    sessionStorage.setItem('hameln_token', newToken);
+    localStorage.setItem('hameln_token', newToken);
     setToken(newToken);
     setError(null);
     localStorage.removeItem('cachedReadingData');
@@ -75,7 +75,7 @@ const App: React.FC = () => {
   };
 
   const handleLogout = () => {
-    sessionStorage.removeItem('hameln_token');
+    localStorage.removeItem('hameln_token');
     localStorage.removeItem('cachedReadingData');
     localStorage.removeItem('lastFetchTimestamp');
     setToken(null);
@@ -85,30 +85,42 @@ const App: React.FC = () => {
 
   const fetchReadingData = useCallback(async () => {
     if (!token) return;
-    
+
     setIsLoading(true);
     setError(null);
-    
-    try {
-      const cachedDataStr = localStorage.getItem('cachedReadingData');
-      const lastFetchStr = localStorage.getItem('lastFetchTimestamp');
-      let cachedData: ReadingDataResponse | null = cachedDataStr ? JSON.parse(cachedDataStr) : null;
-      const lastFetch = lastFetchStr ? parseInt(lastFetchStr, 10) : 0;
-      const threeDays = 3 * 24 * 60 * 60 * 1000;
-      const needsUpdate = !lastFetch || (Date.now() - lastFetch > threeDays);
 
-      if (!cachedData) {
-        // First fetch
-        const data = await hamelnApiService.getReadingData(token);
-        setReadingData(data);
-        localStorage.setItem('cachedReadingData', JSON.stringify(data));
-        localStorage.setItem('lastFetchTimestamp', Date.now().toString());
-      } else {
-        // Use cached data immediately
-        setReadingData(cachedData);
-        if (needsUpdate) {
-            // Background update
-            console.log("Performing 3-day data update...");
+    try {
+        const cachedDataStr = localStorage.getItem('cachedReadingData');
+        const lastFetchStr = localStorage.getItem('lastFetchTimestamp');
+        const cachedData: ReadingDataResponse | null = cachedDataStr ? JSON.parse(cachedDataStr) : null;
+        const lastFetch = lastFetchStr ? parseInt(lastFetchStr, 10) : 0;
+        const threeDays = 3 * 24 * 60 * 60 * 1000;
+        const isCacheValidAndRecent = cachedData && lastFetch && (Date.now() - lastFetch < threeDays);
+
+        // 1. If valid, recent cache exists, use it and skip API calls.
+        if (isCacheValidAndRecent) {
+            console.log("Using recent cache. No API fetch needed.");
+            setReadingData(cachedData);
+            setIsLoading(false);
+            return;
+        }
+
+        // Display stale data first if available, while fetching in the background.
+        if (cachedData) {
+            setReadingData(cachedData);
+        }
+
+        // 2. If no cache exists, perform initial full fetch.
+        if (!cachedData) {
+            console.log("No cache found. Performing initial full data fetch...");
+            const data = await hamelnApiService.getReadingData(token);
+            setReadingData(data);
+            localStorage.setItem('cachedReadingData', JSON.stringify(data));
+            localStorage.setItem('lastFetchTimestamp', Date.now().toString());
+        } 
+        // 3. If cache is stale, perform a partial update for the last two months.
+        else {
+            console.log("Cache is stale. Performing partial update for recent months...");
             const today = new Date();
             const currentYear = today.getFullYear();
             const currentMonth = today.getMonth() + 1;
@@ -123,8 +135,9 @@ const App: React.FC = () => {
                 hamelnApiService.getMonthReadingData(token, prevMonthYear, prevMonth)
             ]);
 
-            // Merge data
+            // Merge new data into a deep copy of the old cached data.
             const updatedData = JSON.parse(JSON.stringify(cachedData));
+            
             if (currentMonthData.data[currentYear] && currentMonthData.data[currentYear][currentMonth]) {
                 if (!updatedData.data[currentYear]) updatedData.data[currentYear] = {};
                 updatedData.data[currentYear][currentMonth] = currentMonthData.data[currentYear][currentMonth];
@@ -138,22 +151,25 @@ const App: React.FC = () => {
             localStorage.setItem('cachedReadingData', JSON.stringify(updatedData));
             localStorage.setItem('lastFetchTimestamp', Date.now().toString());
         }
-      }
     } catch (err: any) {
-      setError(err.message);
-      if (err.message.includes('401') || err.message.toLowerCase().includes('token')) {
-        handleLogout();
-      }
+        setError(err.message);
+        if (err.message.includes('401') || err.message.toLowerCase().includes('token')) {
+            handleLogout();
+        }
     } finally {
-      setIsLoading(false);
+        setIsLoading(false);
     }
   }, [token]);
 
+
   useEffect(() => {
-    if (token && view === 'app') {
+    if (token) { // If token exists, user is logged in
+      setView('app');
       fetchReadingData();
+    } else {
+      setView('landing');
     }
-  }, [token, view, fetchReadingData]);
+  }, [token, fetchReadingData]);
   
   const filteredReadingData = useMemo(() => getFilteredData(readingData), [readingData]);
 
@@ -190,11 +206,16 @@ const App: React.FC = () => {
         const dataByYear: { [year: number]: ProcessedYearlyData } = {};
         const cumulative: CumulativeData = { book_count: 0, chapter_count: 0, word_count: 0 };
 
-        sortedAllMonthlyData.forEach(month => {
+        for (const yearStr in filteredReadingData.data) {
+          for (const monthStr in filteredReadingData.data[yearStr]) {
+            const month = filteredReadingData.data[yearStr][monthStr];
             cumulative.book_count += month.book_count;
             cumulative.chapter_count += month.chapter_count;
             cumulative.word_count += month.word_count;
-
+          }
+        }
+        
+        sortedAllMonthlyData.forEach(month => {
             if (!dataByYear[month.year]) {
                 dataByYear[month.year] = { year: month.year, book_count: 0, chapter_count: 0, word_count: 0, monthly_data: [] };
             }
@@ -233,8 +254,9 @@ const App: React.FC = () => {
               />;
     }
     
+    // This case handles when there is a token, but no data yet (e.g., initial load after login)
     return (
-        <div className="flex flex-col items-center justify-center min-h-screen">
+        <div className="flex flex-col items-center justify-center" style={{minHeight: 'calc(100vh - 200px)'}}>
           <Spinner />
           <p className="mt-4 text-lg">データを準備中...</p>
         </div>
@@ -251,14 +273,7 @@ const App: React.FC = () => {
                         Hameln Reading Stats
                     </h1>
                 </div>
-                {view === 'landing' && token ? (
-                  <button 
-                      onClick={() => setView('app')} 
-                      className="px-4 py-2 text-sm font-medium text-white bg-primary-variant rounded-md hover:bg-primary transition-colors"
-                  >
-                      ダッシュボードへ
-                  </button>
-                ) : token ? (
+                 {token ? (
                    <button
                       onClick={handleLogout}
                       className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-gray-300 bg-surface/50 rounded-md hover:bg-red-500/20 hover:text-red-400 transition-colors border border-gray-700"
@@ -270,14 +285,14 @@ const App: React.FC = () => {
                       onClick={() => setView('app')} 
                       className="px-4 py-2 text-sm font-medium text-white bg-primary-variant rounded-md hover:bg-primary transition-colors"
                   >
-                      ログイン
+                      始める
                   </button>
                 )}
             </div>
         </header>
         
         <div className="flex-grow">
-            {view === 'landing' ? (
+            {view === 'landing' && !token ? (
                 <LandingPage onStart={() => setView('app')} />
             ) : (
                 <main className="container mx-auto p-4 md:p-6">

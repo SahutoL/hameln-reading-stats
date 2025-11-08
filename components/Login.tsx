@@ -89,7 +89,7 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess, onOpenModal }) => {
                         <ul className="list-disc list-inside space-y-1">
                             <li>ユーザーIDとパスワードは、読書データAPIの認証にのみ使用され、本サービスには保存されません。</li>
                             <li>認証情報はAPIサーバーに直接送信されます。</li>
-                            <li>取得した認証トークンは、セッション中のみブラウザに保存され、タブを閉じると破棄されます。</li>
+                            <li>取得した認証トークンは、ログイン状態を維持するためにブラウザに保存され、ログアウトするまで保持されます。</li>
                         </ul>
                     </div>
                 </div>
