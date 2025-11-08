@@ -8,6 +8,14 @@
     <title>Hameln Reading Stats | あなたの読書体験を可視化</title>
     <meta name="description" content="小説投稿サイト「ハーメルン」の読書データを連携し、あなたの読書傾向を美しいグラフや統計で可視化します。目標設定や実績機能で、読書をもっと楽しく、もっと豊かに。"/>
     <meta name="theme-color" content="#121212">
+    <link rel="manifest" href="/manifest.json">
+    <link rel="icon" href="/logo.svg" type="image/svg+xml">
+
+    <!-- iOS Support -->
+    <link rel="apple-touch-icon" href="/logo.svg">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Reading Stats">
 
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
@@ -89,5 +97,14 @@
   <body class="bg-background text-on-background">
     <div id="root"></div>
     <script type="module" src="/index.tsx"></script>
+    <script>
+        if ('serviceWorker' in navigator) {
+          window.addEventListener('load', () => {
+            navigator.serviceWorker.register('/service-worker.js')
+              .then(registration => console.log('Service Worker registered: ', registration))
+              .catch(error => console.log('Service Worker registration failed: ', error));
+          });
+        }
+    </script>
   </body>
 </html>

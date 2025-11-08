@@ -18,13 +18,13 @@ const LandingPage: React.FC<LandingPageProps> = ({ onStart }) => {
   return (
     <div className="animate-fade-in">
       {/* Hero Section */}
-      <section className="text-center py-20 md:py-32">
+      <section className="text-center py-16 md:py-24">
         <div className="container mx-auto px-4">
           <LogoIcon className="h-20 w-20 text-primary mx-auto mb-6" />
-          <h1 className="text-4xl md:text-6xl font-extrabold text-on-surface mb-4 leading-tight">
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-extrabold text-on-surface mb-4 leading-tight">
             あなたの読書体験を、<br className="md:hidden" />もっと豊かに。
           </h1>
-          <p className="text-lg md:text-xl text-gray-400 max-w-3xl mx-auto mb-8">
+          <p className="text-base md:text-lg text-gray-400 max-w-3xl mx-auto mb-8">
             小説投稿サイト「ハーメルン」の読書データを連携し、あなたの読書傾向を美しいグラフや統計で可視化します。自分だけの読書記録を分析し、新たな発見を楽しみましょう。
           </p>
           <button

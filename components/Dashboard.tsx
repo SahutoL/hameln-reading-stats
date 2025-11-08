@@ -156,14 +156,14 @@ const Dashboard: React.FC<DashboardProps> = ({ processedData }) => {
   }, [cumulativeData, calendarData, allMonthlyData, yearlyData]);
 
   const Card: React.FC<{ children: React.ReactNode, className?: string }> = ({ children, className = '' }) => (
-    <div className={`bg-surface-glass backdrop-blur-md border border-gray-700/50 rounded-xl shadow-lg p-6 ${className}`}>
+    <div className={`bg-surface-glass backdrop-blur-md border border-gray-700/50 rounded-xl shadow-lg p-4 md:p-6 ${className}`}>
       {children}
     </div>
   );
 
   return (
     <div className="space-y-6 animate-fade-in">
-        <h1 className="text-3xl font-bold text-on-surface">読書データダッシュボード</h1>
+        <h1 className="text-2xl md:text-3xl font-bold text-on-surface">読書データダッシュボード</h1>
         
         <div className="flex items-center gap-2 text-sm text-gray-400 bg-surface/50 p-3 rounded-lg border border-gray-700/50">
           <InformationCircleIcon className="w-5 h-5 text-primary" />
@@ -174,7 +174,7 @@ const Dashboard: React.FC<DashboardProps> = ({ processedData }) => {
             <StatCard title="累計読了作品数" value={cumulativeData.book_count.toLocaleString()} icon={<BookIcon className="w-8 h-8 text-primary" />} unit="作品" />
             <StatCard title="累計読了話数" value={cumulativeData.chapter_count.toLocaleString()} icon={<ChapterIcon className="w-8 h-8 text-secondary" />} unit="話" />
             <StatCard title="累計読了文字数" value={cumulativeData.word_count.toLocaleString()} icon={<WordIcon className="w-8 h-8 text-yellow-400" />} unit="文字" />
-            <div className="bg-surface p-6 rounded-xl shadow-lg border border-gray-700">
+            <div className="bg-surface p-4 md:p-6 rounded-xl shadow-lg border border-gray-700">
                 <ReadingGoal monthlyData={allMonthlyData} />
             </div>
         </div>
@@ -185,13 +185,13 @@ const Dashboard: React.FC<DashboardProps> = ({ processedData }) => {
         </div>
 
         <Card>
-            <h2 className="text-2xl font-bold text-on-surface mb-4">月間読書量推移 (直近12ヶ月)</h2>
+            <h2 className="text-xl md:text-2xl font-bold text-on-surface mb-4">月間読書量推移 (直近12ヶ月)</h2>
             <div className="h-80">
                 <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={chartData} margin={{ top: 5, right: 20, left: 30, bottom: 5 }}>
+                <BarChart data={chartData} margin={{ top: 5, right: 20, left: 10, bottom: 5 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#444" />
-                    <XAxis dataKey="name" stroke="#9ca3af" />
-                    <YAxis yAxisId="left" orientation="left" stroke="#9ca3af" tickFormatter={(value) => `${Number(value) / 1000}k`} />
+                    <XAxis dataKey="name" stroke="#9ca3af" fontSize={12} />
+                    <YAxis yAxisId="left" orientation="left" stroke="#9ca3af" fontSize={12} tickFormatter={(value) => `${Number(value) / 1000}k`} />
                     <Tooltip contentStyle={{ backgroundColor: '#2d2d2d', border: '1px solid #555', color: '#fff' }} formatter={(value: number) => value.toLocaleString()} />
                     <Legend />
                     <Bar yAxisId="left" dataKey="文字数" fill="#bb86fc" />
@@ -201,7 +201,7 @@ const Dashboard: React.FC<DashboardProps> = ({ processedData }) => {
         </Card>
 
         <Card>
-             <h2 className="text-2xl font-bold text-on-surface mb-4">アクティビティカレンダー (直近1年)</h2>
+             <h2 className="text-xl md:text-2xl font-bold text-on-surface mb-4">アクティビティカレンダー (直近1年)</h2>
              <ActivityCalendar data={calendarData} />
         </Card>
 
@@ -214,7 +214,7 @@ const Dashboard: React.FC<DashboardProps> = ({ processedData }) => {
                 <ReadingTrends data={readingTrendsData} />
             </Card>
             <Card>
-                <h2 className="text-2xl font-bold text-on-surface mb-4">個人データ詳細</h2>
+                <h2 className="text-xl md:text-2xl font-bold text-on-surface mb-4">個人データ詳細</h2>
                 <PersonalStats yearlyData={yearlyData} />
             </Card>
         </div>

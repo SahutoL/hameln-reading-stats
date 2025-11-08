@@ -32,7 +32,7 @@ const Login: React.FC<LoginProps> = ({ onLoginSuccess, onOpenModal }) => {
 
   return (
     <div className="flex items-center justify-center py-12">
-      <div className="w-full max-w-md p-8 space-y-8 bg-surface rounded-xl shadow-lg border border-gray-700">
+      <div className="w-full max-w-md p-6 md:p-8 space-y-8 bg-surface rounded-xl shadow-lg border border-gray-700">
         <div>
           <h2 className="text-center text-3xl font-extrabold text-on-surface">
             ハーメルンアカウントにログイン
