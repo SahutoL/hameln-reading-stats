@@ -86,6 +86,8 @@ export interface ProcessedData {
   cumulativeData: CumulativeData;
   calendarData: CalendarData;
   levelData: LevelData;
+  // FIX: Add achievementsByCategory to the ProcessedData interface to resolve a type error in App.tsx.
+  achievementsByCategory: AchievementCategory[];
 }
 
 // For Comparison Stats

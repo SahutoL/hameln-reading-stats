@@ -1,19 +1,28 @@
 import React from "react";
-import { LogoIcon, DashboardIcon, LogoutIcon, XIcon } from "./icons";
+import {
+  LogoIcon,
+  DashboardIcon,
+  LogoutIcon,
+  XIcon,
+  TrophyIcon,
+} from "./icons";
+import { DocumentChartBarIcon } from "./icons";
 
 interface SidebarProps {
   onLogout: () => void;
   isOpen: boolean;
   onClose: () => void;
+  currentView: "dashboard" | "yearly-report" | "achievements";
 }
 
 const NavItem: React.FC<{
   icon: React.ReactNode;
   label: string;
   active?: boolean;
-}> = ({ icon, label, active }) => (
+  href: string;
+}> = ({ icon, label, active, href }) => (
   <a
-    href="#"
+    href={href}
     className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
       active
         ? "bg-primary/20 text-on-surface"
@@ -25,7 +34,12 @@ const NavItem: React.FC<{
   </a>
 );
 
-const Sidebar: React.FC<SidebarProps> = ({ onLogout, isOpen, onClose }) => {
+const Sidebar: React.FC<SidebarProps> = ({
+  onLogout,
+  isOpen,
+  onClose,
+  currentView,
+}) => {
   return (
     <aside
       className={`fixed inset-y-0 left-0 z-40 w-64 bg-surface-glass backdrop-blur-xl border-r border-white/10 p-4 flex flex-col transition-transform duration-300 ease-in-out lg:relative lg:translate-x-0 ${
@@ -56,10 +70,26 @@ const Sidebar: React.FC<SidebarProps> = ({ onLogout, isOpen, onClose }) => {
             <NavItem
               icon={<DashboardIcon className="w-6 h-6" />}
               label="ダッシュボード"
-              active
+              href="#/dashboard"
+              active={currentView === "dashboard"}
             />
           </li>
-          {/* Future navigation items can be added here */}
+          <li>
+            <NavItem
+              icon={<DocumentChartBarIcon className="w-6 h-6" />}
+              label="年次レポート"
+              href="#/yearly-report"
+              active={currentView === "yearly-report"}
+            />
+          </li>
+          <li>
+            <NavItem
+              icon={<TrophyIcon className="w-6 h-6" />}
+              label="実績一覧"
+              href="#/achievements"
+              active={currentView === "achievements"}
+            />
+          </li>
         </ul>
       </nav>
 

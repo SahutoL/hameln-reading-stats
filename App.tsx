@@ -7,6 +7,7 @@ import {
   ProcessedYearlyData,
   MonthlyData,
   ProcessedData,
+  AchievementCategory,
 } from "./types";
 import Login from "./components/Login";
 import Dashboard from "./components/Dashboard";
@@ -19,6 +20,17 @@ import PrivacyPolicy from "./components/PrivacyPolicy";
 import { calculateLevelData } from "./utils/levelHelper";
 import Sidebar from "./components/Sidebar";
 import Header from "./components/Header";
+import YearlyReport from "./components/YearlyReport";
+import AchievementsPage from "./components/AchievementsPage";
+import { ACHIEVEMENT_DEFINITIONS } from "./components/achievementDefinitions";
+import {
+  BookIcon,
+  CalendarIcon,
+  TargetIcon,
+  WordIcon,
+} from "./components/icons";
+
+type View = "dashboard" | "yearly-report" | "achievements";
 
 // 3 days ago filter
 const getFilteredData = (
@@ -80,6 +92,38 @@ const App: React.FC = () => {
     null
   );
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [currentView, setCurrentView] = useState<View>("dashboard");
+
+  useEffect(() => {
+    const handleHashChange = () => {
+      const hash = window.location.hash.replace("#/", "");
+      switch (hash) {
+        case "yearly-report":
+          setCurrentView("yearly-report");
+          break;
+        case "achievements":
+          setCurrentView("achievements");
+          break;
+        case "dashboard":
+        case "":
+          setCurrentView("dashboard");
+          break;
+        default:
+          window.location.hash = "/dashboard";
+          setCurrentView("dashboard");
+          break;
+      }
+      setIsSidebarOpen(false); // Close sidebar on navigation
+    };
+
+    window.addEventListener("hashchange", handleHashChange, false);
+    // Initial load check
+    handleHashChange();
+
+    return () => {
+      window.removeEventListener("hashchange", handleHashChange, false);
+    };
+  }, []);
 
   const handleLoginSuccess = (newToken: string) => {
     localStorage.setItem("hameln_token", newToken);
@@ -96,6 +140,7 @@ const App: React.FC = () => {
     localStorage.removeItem("lastFetchTimestamp");
     setToken(null);
     setReadingData(null);
+    window.location.hash = "";
     setView("landing");
   };
 
@@ -280,14 +325,99 @@ const App: React.FC = () => {
       (a, b) => b.year - a.year
     );
 
+    // --- Achievements Calculation ---
+    const sortedDates = Array.from(calendarData.keys()).sort();
+    let longestStreak = 0;
+    if (sortedDates.length > 0) {
+      let currentStreak = 1;
+      longestStreak = 1;
+      for (let i = 1; i < sortedDates.length; i++) {
+        const diffDays =
+          (new Date(sortedDates[i]).getTime() -
+            new Date(sortedDates[i - 1]).getTime()) /
+          (1000 * 60 * 60 * 24);
+        currentStreak = diffDays === 1 ? currentStreak + 1 : 1;
+        longestStreak = Math.max(longestStreak, currentStreak);
+      }
+    }
+
+    const { book_count: totalBooks, word_count: totalWords } = cumulative;
+    const maxMonthlyWords = Math.max(
+      0,
+      ...sortedAllMonthlyData.map((m) => m.word_count)
+    );
+    const metrics = { totalWords, longestStreak, maxMonthlyWords, totalBooks };
+    const categoryIcons: { [key: string]: React.ReactNode } = {
+      累計読了文字数: <WordIcon className="w-6 h-6 text-yellow-400" />,
+      連続読書日数: <CalendarIcon className="w-6 h-6 text-red-400" />,
+      月間読了文字数: <TargetIcon className="w-6 h-6 text-secondary" />,
+      累計読了作品数: <BookIcon className="w-6 h-6 text-primary" />,
+    };
+
+    const achievementsByCategory: AchievementCategory[] =
+      ACHIEVEMENT_DEFINITIONS.map((cat) => {
+        const currentValue = metrics[cat.metric as keyof typeof metrics];
+        const unlockedAchievements = cat.achievements.filter(
+          (ach) => currentValue >= ach.value
+        );
+        const latestAchievement =
+          unlockedAchievements.length > 0
+            ? unlockedAchievements[unlockedAchievements.length - 1]
+            : null;
+        const next = cat.achievements.find((ach) => currentValue < ach.value);
+        const lastUnlockedValue = latestAchievement
+          ? latestAchievement.value
+          : 0;
+        const progress = next
+          ? Math.min(
+              Math.max(
+                ((currentValue - lastUnlockedValue) /
+                  (next.value - lastUnlockedValue)) *
+                  100,
+                0
+              ),
+              100
+            )
+          : 100;
+
+        return {
+          name: cat.name,
+          icon: categoryIcons[cat.name],
+          achievements: cat.achievements,
+          currentValue,
+          unlockedCount: unlockedAchievements.length,
+          totalCount: cat.achievements.length,
+          nextAchievement: { achievement: next || null, progress },
+          latestAchievement,
+        };
+      });
+
     return {
       allMonthlyData: sortedAllMonthlyData,
       yearlyData,
       cumulativeData: cumulative,
       calendarData,
       levelData,
+      achievementsByCategory,
     };
   }, [filteredReadingData]);
+
+  const renderCurrentView = () => {
+    if (!processedData) return null;
+    switch (currentView) {
+      case "yearly-report":
+        return <YearlyReport yearlyData={processedData.yearlyData} />;
+      case "achievements":
+        return (
+          <AchievementsPage
+            achievementsByCategory={processedData.achievementsByCategory}
+          />
+        );
+      case "dashboard":
+      default:
+        return <Dashboard processedData={processedData} />;
+    }
+  };
 
   const renderContent = () => {
     if (view === "landing" && !token) {
@@ -334,6 +464,7 @@ const App: React.FC = () => {
           isOpen={isSidebarOpen}
           onClose={() => setIsSidebarOpen(false)}
           onLogout={handleLogout}
+          currentView={currentView}
         />
         <div className="flex-1 flex flex-col overflow-hidden">
           <Header onMenuClick={() => setIsSidebarOpen(true)} />
@@ -348,7 +479,7 @@ const App: React.FC = () => {
               {error && (
                 <ErrorMessage message={error} onRetry={fetchReadingData} />
               )}
-              {processedData && <Dashboard processedData={processedData} />}
+              {processedData && renderCurrentView()}
             </main>
             <footer className="w-full bg-transparent py-4 mt-auto">
               <div className="container mx-auto text-center text-gray-500 text-sm">

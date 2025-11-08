@@ -9,16 +9,10 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
-import {
-  ProcessedData,
-  AchievementCategory,
-  ComparisonData,
-  PersonalInsightsData,
-} from "../types";
+import { ProcessedData, ComparisonData, PersonalInsightsData } from "../types";
 import StatCard from "./StatCard";
 import ReadingGoal from "./ReadingGoal";
 import ActivityCalendar from "./ActivityCalendar";
-import Achievements from "./Achievements";
 import ReadingTrends from "./ReadingTrends";
 import ComparisonStats from "./ComparisonStats";
 import PersonalInsights from "./PersonalInsights";
@@ -29,9 +23,7 @@ import {
   WordIcon,
   InformationCircleIcon,
   CalendarIcon,
-  TargetIcon,
 } from "./icons";
-import { ACHIEVEMENT_DEFINITIONS } from "./achievementDefinitions";
 import LevelProgress from "./LevelProgress";
 import Roadmap from "./Roadmap";
 
@@ -83,7 +75,6 @@ const Dashboard: React.FC<DashboardProps> = ({ processedData }) => {
   );
 
   const {
-    achievementsByCategory,
     readingTrendsData,
     comparisonData,
     personalInsightsData,
@@ -256,63 +247,6 @@ const Dashboard: React.FC<DashboardProps> = ({ processedData }) => {
       longestStreak: currentLongestStreak,
     };
 
-    // --- Achievements Calculation ---
-    const { book_count: totalBooks } = cumulativeData;
-    const maxMonthlyWords = Math.max(
-      0,
-      ...allMonthlyData.map((m) => m.word_count)
-    );
-    const metrics = {
-      totalWords,
-      longestStreak: currentLongestStreak,
-      maxMonthlyWords,
-      totalBooks,
-    };
-    const categoryIcons: { [key: string]: React.ReactNode } = {
-      累計読了文字数: <WordIcon className="w-6 h-6 text-yellow-400" />,
-      連続読書日数: <CalendarIcon className="w-6 h-6 text-red-400" />,
-      月間読了文字数: <TargetIcon className="w-6 h-6 text-secondary" />,
-      累計読了作品数: <BookIcon className="w-6 h-6 text-primary" />,
-    };
-
-    const finalAchievements: AchievementCategory[] =
-      ACHIEVEMENT_DEFINITIONS.map((cat) => {
-        const currentValue = metrics[cat.metric as keyof typeof metrics];
-        const unlockedAchievements = cat.achievements.filter(
-          (ach) => currentValue >= ach.value
-        );
-        const latestAchievement =
-          unlockedAchievements.length > 0
-            ? unlockedAchievements[unlockedAchievements.length - 1]
-            : null;
-        const next = cat.achievements.find((ach) => currentValue < ach.value);
-        const lastUnlockedValue = latestAchievement
-          ? latestAchievement.value
-          : 0;
-        const progress = next
-          ? Math.min(
-              Math.max(
-                ((currentValue - lastUnlockedValue) /
-                  (next.value - lastUnlockedValue)) *
-                  100,
-                0
-              ),
-              100
-            )
-          : 100;
-
-        return {
-          name: cat.name,
-          icon: categoryIcons[cat.name],
-          achievements: cat.achievements,
-          currentValue,
-          unlockedCount: unlockedAchievements.length,
-          totalCount: cat.achievements.length,
-          nextAchievement: { achievement: next || null, progress },
-          latestAchievement,
-        };
-      });
-
     // --- Reading trends calculation ---
     const dayCountsTrend: number[] = Array(7).fill(0);
     calendarData.forEach(
@@ -324,7 +258,6 @@ const Dashboard: React.FC<DashboardProps> = ({ processedData }) => {
     }));
 
     return {
-      achievementsByCategory: finalAchievements,
       readingTrendsData: trendsData,
       comparisonData: finalComparisonData,
       personalInsightsData: finalPersonalInsightsData,
@@ -457,10 +390,6 @@ const Dashboard: React.FC<DashboardProps> = ({ processedData }) => {
           アクティビティカレンダー (直近1年)
         </h2>
         <ActivityCalendar data={calendarData} />
-      </AnimatedCard>
-
-      <AnimatedCard delay={1200}>
-        <Achievements achievementsByCategory={achievementsByCategory} />
       </AnimatedCard>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
