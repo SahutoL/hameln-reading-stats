@@ -81,22 +81,28 @@ const PersonalStats: React.FC<PersonalStatsProps> = ({ yearlyData }) => {
                         >
                             <div className="w-1/5 font-bold text-lg text-on-surface">{year.year}年</div>
                             <div className="w-3/5 px-4 space-y-2">
-                                <div className="grid grid-cols-2 md:grid-cols-4 gap-x-4 text-gray-300">
+                                <div className="grid grid-cols-2 gap-x-4 text-gray-300">
+                                    {/* Left Column */}
                                     <div>
-                                        <div className="text-sm font-semibold text-on-surface">{year.book_count.toLocaleString()}</div>
-                                        <div className="text-xs text-gray-500">作品</div>
+                                        <div>
+                                            <div className="text-sm font-semibold text-on-surface">{year.book_count.toLocaleString()}</div>
+                                            <div className="text-xs text-gray-500">作品</div>
+                                        </div>
+                                        <div className="hidden md:block mt-2">
+                                            <div className="text-sm font-semibold text-on-surface">{year.word_count.toLocaleString()}</div>
+                                            <div className="text-xs text-gray-500">文字</div>
+                                        </div>
                                     </div>
+                                    {/* Right Column */}
                                     <div>
-                                        <div className="text-sm font-semibold text-on-surface">{year.chapter_count.toLocaleString()}</div>
-                                        <div className="text-xs text-gray-500">話</div>
-                                    </div>
-                                    <div className="hidden md:block">
-                                        <div className="text-sm font-semibold text-on-surface">{year.word_count.toLocaleString()}</div>
-                                        <div className="text-xs text-gray-500">文字</div>
-                                    </div>
-                                    <div className="hidden md:block">
-                                        <div className="text-sm font-semibold text-on-surface">{year.avgWordsPerDay.toLocaleString()}</div>
-                                        <div className="text-xs text-gray-500">文字/日</div>
+                                        <div>
+                                            <div className="text-sm font-semibold text-on-surface">{year.chapter_count.toLocaleString()}</div>
+                                            <div className="text-xs text-gray-500">話</div>
+                                        </div>
+                                        <div className="hidden md:block mt-2">
+                                            <div className="text-sm font-semibold text-on-surface">{year.avgWordsPerDay.toLocaleString()}</div>
+                                            <div className="text-xs text-gray-500">文字/日</div>
+                                        </div>
                                     </div>
                                 </div>
                                 <InlineBar percentage={year.yearlyBarPercentage} />
@@ -118,22 +124,28 @@ const PersonalStats: React.FC<PersonalStatsProps> = ({ yearlyData }) => {
                                                     <span className="font-semibold text-gray-300">{monthNames[month.month]}</span>
                                                 </div>
                                                 <div className="w-4/5 px-4 space-y-2">
-                                                     <div className="grid grid-cols-2 md:grid-cols-4 gap-x-4 text-gray-400">
+                                                    <div className="grid grid-cols-2 gap-x-4 text-gray-400">
+                                                        {/* Left Column */}
                                                         <div>
-                                                            <div className="text-xs font-semibold text-on-surface">{month.book_count.toLocaleString()}</div>
-                                                            <div className="text-xs text-gray-500">作品</div>
+                                                            <div>
+                                                                <div className="text-xs font-semibold text-on-surface">{month.book_count.toLocaleString()}</div>
+                                                                <div className="text-xs text-gray-500">作品</div>
+                                                            </div>
+                                                            <div className="hidden md:block mt-2">
+                                                                <div className="text-xs font-semibold text-on-surface">{month.word_count.toLocaleString()}</div>
+                                                                <div className="text-xs text-gray-500">文字</div>
+                                                            </div>
                                                         </div>
+                                                        {/* Right Column */}
                                                         <div>
-                                                            <div className="text-xs font-semibold text-on-surface">{month.chapter_count.toLocaleString()}</div>
-                                                            <div className="text-xs text-gray-500">話</div>
-                                                        </div>
-                                                        <div className="hidden md:block">
-                                                            <div className="text-xs font-semibold text-on-surface">{month.word_count.toLocaleString()}</div>
-                                                            <div className="text-xs text-gray-500">文字</div>
-                                                        </div>
-                                                        <div className="hidden md:block">
-                                                            <div className="text-xs font-semibold text-on-surface">{month.avgWordsPerDay.toLocaleString()}</div>
-                                                            <div className="text-xs text-gray-500">文字/日</div>
+                                                            <div>
+                                                                <div className="text-xs font-semibold text-on-surface">{month.chapter_count.toLocaleString()}</div>
+                                                                <div className="text-xs text-gray-500">話</div>
+                                                            </div>
+                                                            <div className="hidden md:block mt-2">
+                                                                <div className="text-xs font-semibold text-on-surface">{month.avgWordsPerDay.toLocaleString()}</div>
+                                                                <div className="text-xs text-gray-500">文字/日</div>
+                                                            </div>
                                                         </div>
                                                     </div>
                                                     <InlineBar percentage={year.maxMonthlyWords > 0 ? (month.word_count / year.maxMonthlyWords) * 100 : 0} />
