@@ -1,8 +1,10 @@
-const CACHE_NAME = 'hameln-reading-stats-v2.1';
+const CACHE_NAME = 'hameln-reading-stats-v3.0';
 const urlsToCache = [
   '/',
   '/index.html',
-  // '/logo.svg' is removed because its name is hashed during build
+  '/manifest.json',
+  '/icon-192.png',
+  '/icon-512.png',
   'https://cdn.tailwindcss.com',
   'https://unpkg.com/react@18/umd/react.production.min.js',
   'https://unpkg.com/react-dom@18/umd/react-dom.production.min.js',
