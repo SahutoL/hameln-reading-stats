@@ -1,4 +1,4 @@
-const CACHE_NAME = 'hameln-reading-stats-v4.0';
+const CACHE_NAME = 'hameln-reading-stats-v5.0';
 const urlsToCache = [
   '/',
   '/index.html',
@@ -71,7 +71,7 @@ self.addEventListener('fetch', event => {
   );
 });
 
-// 古いキャッシュの削除処理
+// 古いキャッシュの削除処理 & 新しいSWでページを即時制御
 self.addEventListener('activate', event => {
   const cacheWhitelist = [CACHE_NAME];
   event.waitUntil(
@@ -84,6 +84,6 @@ self.addEventListener('activate', event => {
           }
         })
       );
-    })
+    }).then(() => self.clients.claim()) // Ensure new SW takes control immediately
   );
 });
