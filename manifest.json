@@ -6,10 +6,11 @@
       "src": "/logo.svg",
       "type": "image/svg+xml",
       "sizes": "any",
-      "purpose": "any"
+      "purpose": "any maskable"
     }
   ],
-  "start_url": ".",
+  "start_url": "/",
+  "scope": "/",
   "display": "standalone",
   "theme_color": "#121212",
   "background_color": "#121212",

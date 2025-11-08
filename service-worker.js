@@ -1,11 +1,8 @@
-const CACHE_NAME = 'hameln-reading-stats-v1';
+const CACHE_NAME = 'hameln-reading-stats-v2'; // Cache version updated
 const urlsToCache = [
   '/',
   '/index.html',
-  // 注意: 実際のアプリケーションでは、ビルド後のJS/CSSファイル名を指定する必要があります
-  // '/static/js/bundle.js', 
-  // '/static/css/main.css',
-  '/logo.svg',
+  // '/logo.svg' is removed because its name is hashed during build
   'https://cdn.tailwindcss.com',
   'https://unpkg.com/react@18/umd/react.production.min.js',
   'https://unpkg.com/react-dom@18/umd/react-dom.production.min.js',
@@ -14,11 +11,11 @@ const urlsToCache = [
 
 // Service Workerのインストール処理
 self.addEventListener('install', event => {
+  self.skipWaiting(); // Activate new service worker immediately
   event.waitUntil(
     caches.open(CACHE_NAME)
       .then(cache => {
         console.log('Opened cache');
-        // 必須ではないリソースのエラーは無視する
         const cachePromises = urlsToCache.map(urlToCache => {
             return cache.add(urlToCache).catch(err => {
                 console.warn(`Failed to cache ${urlToCache}:`, err);
@@ -37,31 +34,37 @@ self.addEventListener('fetch', event => {
     return;
   }
 
+  // Use a cache-first strategy, but update cache on network fetch
   event.respondWith(
     caches.match(event.request)
       .then(response => {
-        // キャッシュにヒットすればそれを返す
+        // Cache hit - return response
         if (response) {
           return response;
         }
-        // キャッシュになければネットワークから取得
+
+        // Not in cache - fetch from network
         return fetch(event.request).then(
           networkResponse => {
-            // オプショナル: ネットワークから取得したリソースをキャッシュに追加
-            // if(networkResponse.status === 200) {
-            //   const responseToCache = networkResponse.clone();
-            //   caches.open(CACHE_NAME).then(cache => {
-            //     cache.put(event.request, responseToCache);
-            //   });
-            // }
+            // Check if we received a valid response
+            if (!networkResponse || networkResponse.status !== 200 || event.request.method !== 'GET') {
+              return networkResponse;
+            }
+
+            // Clone the response because it's a stream and can only be consumed once.
+            const responseToCache = networkResponse.clone();
+
+            caches.open(CACHE_NAME)
+              .then(cache => {
+                cache.put(event.request, responseToCache);
+              });
+
             return networkResponse;
           }
         );
       }
     ).catch(error => {
-        // ネットワークもキャッシュも利用できない場合のフォールバック
         console.error('Fetch failed; returning offline page instead.', error);
-        // return caches.match('/offline.html'); // 必要であればオフライン専用ページを返す
     })
   );
 });
@@ -74,6 +77,7 @@ self.addEventListener('activate', event => {
       return Promise.all(
         cacheNames.map(cacheName => {
           if (cacheWhitelist.indexOf(cacheName) === -1) {
+            console.log('Deleting old cache:', cacheName);
             return caches.delete(cacheName);
           }
         })

@@ -87,12 +87,12 @@ const PersonalStats: React.FC<PersonalStatsProps> = ({ yearlyData }) => {
                                         <div className="text-xs text-gray-500">作品</div>
                                     </div>
                                     <div>
-                                        <div className="text-sm font-semibold text-on-surface">{year.chapter_count.toLocaleString()}</div>
-                                        <div className="text-xs text-gray-500">話</div>
-                                    </div>
-                                    <div>
                                         <div className="text-sm font-semibold text-on-surface">{year.word_count.toLocaleString()}</div>
                                         <div className="text-xs text-gray-500">文字</div>
+                                    </div>
+                                    <div>
+                                        <div className="text-sm font-semibold text-on-surface">{year.chapter_count.toLocaleString()}</div>
+                                        <div className="text-xs text-gray-500">話</div>
                                     </div>
                                     <div>
                                         <div className="text-sm font-semibold text-on-surface">{year.avgWordsPerDay.toLocaleString()}</div>
@@ -124,12 +124,12 @@ const PersonalStats: React.FC<PersonalStatsProps> = ({ yearlyData }) => {
                                                             <div className="text-xs text-gray-500">作品</div>
                                                         </div>
                                                         <div>
-                                                            <div className="text-xs font-semibold text-on-surface">{month.chapter_count.toLocaleString()}</div>
-                                                            <div className="text-xs text-gray-500">話</div>
-                                                        </div>
-                                                        <div>
                                                             <div className="text-xs font-semibold text-on-surface">{month.word_count.toLocaleString()}</div>
                                                             <div className="text-xs text-gray-500">文字</div>
+                                                        </div>
+                                                        <div>
+                                                            <div className="text-xs font-semibold text-on-surface">{month.chapter_count.toLocaleString()}</div>
+                                                            <div className="text-xs text-gray-500">話</div>
                                                         </div>
                                                         <div>
                                                             <div className="text-xs font-semibold text-on-surface">{month.avgWordsPerDay.toLocaleString()}</div>
