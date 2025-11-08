@@ -22,6 +22,9 @@ export interface MonthlyStats {
 export interface MonthlyData extends MonthlyStats {
   year: number;
   month: number;
+  // FIX: Add optional properties to fix type errors in PersonalStats.tsx where monthly data is augmented with additional properties.
+  isBest?: boolean;
+  avgWordsPerDay?: number;
 }
 
 // APIレスポンス全体の型定義
