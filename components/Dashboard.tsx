@@ -43,6 +43,9 @@ import {
 import LevelProgress from "./LevelProgress";
 import Roadmap from "./Roadmap";
 import Modal from "./Modal";
+import Spinner from "./Spinner";
+
+declare const html2canvas: any;
 
 // --- Report Card Component ---
 const getTierColor = (tier: AchievementTier): string => {
@@ -165,31 +168,109 @@ const ReportCardModal: React.FC<ReportCardModalProps> = ({
   processedData,
 }) => {
   const cardRef = useRef<HTMLDivElement>(null);
+  const [processingAction, setProcessingAction] = useState<
+    "download" | "share" | null
+  >(null);
 
-  const handleDownload = useCallback(() => {
-    alert(
-      "この機能は現在開発中です。お手数ですが、ブラウザのスクリーンショット機能を使って画像を保存してください。"
-    );
-    // In a real scenario with a library like html2canvas:
-    // const element = cardRef.current;
-    // if (element) {
-    //   html2canvas(element).then(canvas => {
-    //     const link = document.createElement('a');
-    //     link.download = 'hameln-reading-report.png';
-    //     link.href = canvas.toDataURL();
-    //     link.click();
-    //   });
-    // }
+  const captureCardAsImage = useCallback(async (): Promise<Blob | null> => {
+    if (typeof html2canvas === "undefined") {
+      alert(
+        "イメージ生成ライブラリの読み込みに失敗しました。ページをリロードして再度お試しください。"
+      );
+      return null;
+    }
+    if (!cardRef.current) return null;
+
+    const canvas = await html2canvas(cardRef.current, {
+      backgroundColor: "#1e1e24",
+      scale: 2, // Increase resolution for better quality
+    });
+
+    return new Promise((resolve) => {
+      canvas.toBlob((blob) => {
+        resolve(blob);
+      }, "image/png");
+    });
   }, []);
 
-  const handleShare = () => {
-    const text = `私の今年の読書レポートです！あなたも自分の読書データを可視化してみませんか？ #HamelnReadingStats`;
-    const url = window.location.origin;
-    const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(
-      text
-    )}&url=${encodeURIComponent(url)}`;
-    window.open(twitterUrl, "_blank");
-  };
+  const handleDownload = useCallback(async () => {
+    setProcessingAction("download");
+    try {
+      const blob = await captureCardAsImage();
+      if (blob) {
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.download = "reading-report-card.png";
+        link.href = url;
+        document.body.appendChild(link); // Required for Firefox
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+      }
+    } catch (error) {
+      console.error("Failed to download image:", error);
+      alert("画像のダウンロードに失敗しました。");
+    } finally {
+      setProcessingAction(null);
+    }
+  }, [captureCardAsImage]);
+
+  const handleShare = useCallback(async () => {
+    setProcessingAction("share");
+    try {
+      const blob = await captureCardAsImage();
+      if (!blob) {
+        throw new Error("Failed to generate image blob.");
+      }
+
+      const file = new File([blob], "reading-report-card.png", {
+        type: "image/png",
+      });
+      const text = `私の年間読書レポートです！あなたも自分の読書データを可視化してみませんか？ #HamelnReadingStats`;
+      const url = window.location.origin;
+
+      // Use Web Share API if available (mainly on mobile)
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
+        await navigator.share({
+          files: [file],
+          title: "読書レポートカード",
+          text: text,
+          url: url,
+        });
+      } else {
+        // Fallback for desktop browsers
+        alert(
+          "お使いのブラウザは画像の直接シェアに対応していません。画像をダウンロードした後、X (Twitter) に投稿してください。"
+        );
+
+        // Trigger download for the user
+        const downloadUrl = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.download = "reading-report-card.png";
+        link.href = downloadUrl;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(downloadUrl);
+
+        // Open Twitter intent in a new tab
+        const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(
+          text
+        )}&url=${encodeURIComponent(url)}`;
+        setTimeout(() => {
+          window.open(twitterUrl, "_blank", "noopener,noreferrer");
+        }, 500);
+      }
+    } catch (error: any) {
+      // User cancellation of the share dialog is not an error.
+      if (error.name !== "AbortError") {
+        console.error("Failed to share:", error);
+        alert("シェア機能の実行中にエラーが発生しました。");
+      }
+    } finally {
+      setProcessingAction(null);
+    }
+  }, [captureCardAsImage]);
 
   if (!processedData) return null;
 
@@ -200,17 +281,31 @@ const ReportCardModal: React.FC<ReportCardModalProps> = ({
         <div className="flex flex-col sm:flex-row gap-4 w-full max-w-sm">
           <button
             onClick={handleDownload}
-            className="w-full text-center px-4 py-2 font-semibold bg-secondary text-background rounded-lg hover:opacity-90 transition-opacity"
+            disabled={processingAction !== null}
+            className="w-full text-center px-4 py-2.5 font-semibold bg-secondary text-background rounded-lg hover:opacity-90 transition-all disabled:bg-gray-500 disabled:cursor-wait flex items-center justify-center"
           >
-            画像をダウンロード
+            {processingAction === "download" ? (
+              <Spinner />
+            ) : (
+              "画像をダウンロード"
+            )}
           </button>
           <button
             onClick={handleShare}
-            className="w-full text-center px-4 py-2 font-semibold bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+            disabled={processingAction !== null}
+            className="w-full text-center px-4 py-2.5 font-semibold bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors disabled:bg-gray-500 disabled:cursor-wait flex items-center justify-center"
           >
-            Twitterでシェア
+            {processingAction === "share" ? (
+              <Spinner />
+            ) : (
+              "X (Twitter) でシェア"
+            )}
           </button>
         </div>
+        <p className="text-xs text-gray-500 text-center max-w-sm">
+          X (Twitter)
+          でシェアする場合、お使いのブラウザによっては画像のダウンロード後に手動で添付する必要があります。
+        </p>
       </div>
     </Modal>
   );
