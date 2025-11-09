@@ -110,15 +110,15 @@ const ReportCardContent: React.FC<ReportCardProps> = ({ processedData }) => {
           </p>
         </div>
 
-        <div className="grid grid-cols-3 gap-x-2 text-center">
+        <div className="grid grid-cols-2 gap-x-4 text-center">
           <div>
-            <p className="text-2xl font-bold">
+            <p className="text-3xl font-bold">
               {cumulativeData.word_count.toLocaleString()}
             </p>
             <p className="text-xs text-gray-400 mt-1">累計読了文字数</p>
           </div>
           <div>
-            <p className="text-2xl font-bold">
+            <p className="text-3xl font-bold">
               {longestStreak.toLocaleString()}
             </p>
             <p className="text-xs text-gray-400 mt-1">最長連続読書日数</p>

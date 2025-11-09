@@ -32,6 +32,7 @@ import {
   TargetIcon,
   WordIcon,
 } from "./components/icons";
+import AdsenseComponent from "./components/AdsenseComponent";
 
 type View = "dashboard" | "yearly-report" | "achievements";
 
@@ -503,7 +504,24 @@ const App: React.FC = () => {
               {error && (
                 <ErrorMessage message={error} onRetry={fetchReadingData} />
               )}
-              {processedData && renderCurrentView()}
+              {processedData && (
+                <>
+                  {renderCurrentView()}
+
+                  {/*
+                    AdSense広告ユニット
+                    ポリシー違反を避けるため、ログイン後でかつデータが
+                    正常に読み込まれたコンテンツページにのみ表示します。
+                  */}
+                  <div className="mt-8">
+                    {/* 審査に合格した有効な広告スロットIDに置き換えてください */}
+                    <AdsenseComponent
+                      client="ca-pub-3540900632101010"
+                      slot="1234567890" // TODO: Replace with your actual ad slot ID
+                    />
+                  </div>
+                </>
+              )}
             </main>
             <footer className="w-full bg-transparent py-4 mt-auto">
               <div className="container mx-auto text-center text-gray-500 text-sm">
