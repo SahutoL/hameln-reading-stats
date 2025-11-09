@@ -91,6 +91,7 @@ export interface ProcessedData {
   levelData: LevelData;
   achievementsByCategory: AchievementCategory[];
   longestStreak: number;
+  currentStreak: number;
   mostProudAchievement: Achievement | null;
 }
 

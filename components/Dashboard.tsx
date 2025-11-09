@@ -4,6 +4,7 @@ import React, {
   useRef,
   useCallback,
   forwardRef,
+  useEffect,
 } from "react";
 import {
   BarChart,
@@ -90,71 +91,72 @@ interface ReportCardProps {
   processedData: ProcessedData;
 }
 
-const ReportCardContent = forwardRef<HTMLDivElement, ReportCardProps>(
-  ({ processedData }, ref) => {
-    const { cumulativeData, levelData, longestStreak, mostProudAchievement } =
-      processedData;
+const ReportCardContent: React.FC<ReportCardProps> = ({ processedData }) => {
+  const { cumulativeData, levelData, longestStreak, mostProudAchievement } =
+    processedData;
 
-    return (
-      <div
-        ref={ref}
-        className="w-[380px] h-[580px] bg-gradient-to-br from-[#1e1e24] to-[#0f0f14] p-6 flex flex-col font-sans text-white rounded-2xl border border-primary/20 shadow-2xl shadow-primary/20"
-      >
-        <header className="flex items-center gap-2 border-b border-white/10 pb-3">
-          <LogoIcon className="w-8 h-8 text-primary" />
-          <h2 className="text-xl font-bold">年間読書レポート</h2>
-        </header>
+  return (
+    <div className="w-[380px] h-[580px] bg-gradient-to-br from-[#1e1e24] to-[#0f0f14] p-6 flex flex-col font-sans text-white rounded-2xl border border-primary/20 shadow-2xl shadow-primary/20">
+      <header className="flex items-center gap-2 border-b border-white/10 pb-3">
+        <LogoIcon className="w-8 h-8 text-primary" />
+        <h2 className="text-xl font-bold">年間読書レポート</h2>
+      </header>
 
-        <main className="flex-grow flex flex-col justify-around py-4">
-          <div className="text-center">
-            <p className="text-gray-400 text-sm">読書レベル</p>
-            <p className="text-6xl font-bold text-primary tracking-tighter">
-              Lv. {levelData.level}
+      <main className="flex-grow flex flex-col justify-around py-4">
+        <div className="text-center">
+          <p className="text-gray-400 text-sm">読書レベル</p>
+          <p className="text-6xl font-bold text-primary tracking-tighter">
+            Lv. {levelData.level}
+          </p>
+        </div>
+
+        <div className="grid grid-cols-3 gap-x-2 text-center">
+          <div>
+            <p className="text-2xl font-bold">
+              {cumulativeData.word_count.toLocaleString()}
+            </p>
+            <p className="text-xs text-gray-400 mt-1">累計読了文字数</p>
+          </div>
+          <div>
+            <p className="text-2xl font-bold">
+              {cumulativeData.book_count.toLocaleString()}
+            </p>
+            <p className="text-xs text-gray-400 mt-1">累計読了作品数</p>
+          </div>
+          <div>
+            <p className="text-2xl font-bold">
+              {longestStreak.toLocaleString()}
+            </p>
+            <p className="text-xs text-gray-400 mt-1">最長連続読書日数</p>
+          </div>
+        </div>
+
+        {mostProudAchievement && (
+          <div className="bg-white/5 p-4 rounded-lg text-center">
+            <p className="text-xs text-primary font-bold">最も輝かしい称号</p>
+            <ShieldCheckIcon
+              tierColor={getTierColor(mostProudAchievement.tier)}
+              className="w-12 h-12 mx-auto my-2"
+            />
+            <p className="text-lg font-bold">
+              <span className="text-yellow-300">
+                [{getTierName(mostProudAchievement.tier)}]
+              </span>{" "}
+              {mostProudAchievement.name}
+            </p>
+            <p className="text-xs text-gray-400">
+              {mostProudAchievement.description}
             </p>
           </div>
+        )}
+      </main>
 
-          <div className="grid grid-cols-2 gap-4 text-center">
-            <div>
-              <p className="text-3xl font-bold">
-                {cumulativeData.word_count.toLocaleString()}
-              </p>
-              <p className="text-xs text-gray-400">累計読了文字数</p>
-            </div>
-            <div>
-              <p className="text-3xl font-bold">
-                {longestStreak.toLocaleString()}
-              </p>
-              <p className="text-xs text-gray-400">最長連続読書日数</p>
-            </div>
-          </div>
-
-          {mostProudAchievement && (
-            <div className="bg-white/5 p-4 rounded-lg text-center">
-              <p className="text-xs text-primary font-bold">最も輝かしい称号</p>
-              <ShieldCheckIcon
-                tierColor={getTierColor(mostProudAchievement.tier)}
-                className="w-12 h-12 mx-auto my-2"
-              />
-              <p className="text-lg font-bold">
-                <span className="text-yellow-300">
-                  [{getTierName(mostProudAchievement.tier)}]
-                </span>{" "}
-                {mostProudAchievement.name}
-              </p>
-              <p className="text-xs text-gray-400">
-                {mostProudAchievement.description}
-              </p>
-            </div>
-          )}
-        </main>
-
-        <footer className="text-center text-xs text-gray-500 pt-3 border-t border-white/10">
-          <p>Generated by Hameln Reading Stats</p>
-        </footer>
-      </div>
-    );
-  }
-);
+      <footer className="text-center text-xs text-gray-500 pt-3 border-t border-white/10">
+        <p>Generated by Hameln Reading Stats</p>
+      </footer>
+    </div>
+  );
+};
 
 interface ReportCardModalProps {
   isOpen: boolean;
@@ -167,10 +169,37 @@ const ReportCardModal: React.FC<ReportCardModalProps> = ({
   onClose,
   processedData,
 }) => {
-  const cardRef = useRef<HTMLDivElement>(null);
+  const captureRef = useRef<HTMLDivElement>(null);
+  const previewContainerRef = useRef<HTMLDivElement>(null);
+  const [scale, setScale] = useState(1);
   const [processingAction, setProcessingAction] = useState<
     "download" | "share" | null
   >(null);
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const calculateScale = () => {
+      if (previewContainerRef.current) {
+        const containerWidth = previewContainerRef.current.offsetWidth;
+        // Add some padding to prevent touching edges, e.g., 16px total.
+        const targetWidth = containerWidth - 16;
+        const newScale = Math.min(1, targetWidth / 380);
+        setScale(newScale);
+      }
+    };
+
+    // Calculate on open and on resize
+    calculateScale();
+    const animationFrame = requestAnimationFrame(calculateScale);
+    window.addEventListener("resize", calculateScale);
+
+    // Cleanup
+    return () => {
+      window.removeEventListener("resize", calculateScale);
+      cancelAnimationFrame(animationFrame);
+    };
+  }, [isOpen]);
 
   const captureCardAsImage = useCallback(async (): Promise<Blob | null> => {
     if (typeof html2canvas === "undefined") {
@@ -179,17 +208,21 @@ const ReportCardModal: React.FC<ReportCardModalProps> = ({
       );
       return null;
     }
-    if (!cardRef.current) return null;
+    if (!captureRef.current) return null;
 
-    const canvas = await html2canvas(cardRef.current, {
-      backgroundColor: "#1e1e24",
+    const canvas = await html2canvas(captureRef.current, {
+      backgroundColor: null, // Use component's background
       scale: 2, // Increase resolution for better quality
     });
 
     return new Promise((resolve) => {
-      canvas.toBlob((blob) => {
-        resolve(blob);
-      }, "image/jpeg");
+      canvas.toBlob(
+        (blob) => {
+          resolve(blob);
+        },
+        "image/jpeg",
+        0.95
+      ); // Set quality for JPEG
     });
   }, []);
 
@@ -277,19 +310,35 @@ const ReportCardModal: React.FC<ReportCardModalProps> = ({
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="読書レポートカード">
       <div className="flex flex-col items-center gap-6">
-        {/* Wrapper for responsive scaling */}
-        <div className="w-full max-w-[380px]">
-          <div className="aspect-[380/580] w-full h-auto relative">
-            {/* The element to be captured by html2canvas must have fixed dimensions, so we scale it down. */}
+        {/* Capture Target (Hidden) */}
+        <div
+          style={{
+            position: "absolute",
+            left: "-9999px",
+            top: "auto",
+            zIndex: -1,
+          }}
+        >
+          <div ref={captureRef}>
+            <ReportCardContent processedData={processedData} />
+          </div>
+        </div>
+
+        {/* Responsive Preview */}
+        <div ref={previewContainerRef} className="w-full">
+          <div
+            className="mx-auto flex justify-center"
+            style={{ height: 580 * scale }}
+          >
             <div
-              className="origin-top-left transform-gpu absolute top-0 left-0"
+              className="origin-top"
               style={{
-                transform: "scale(calc(100% / 380px))",
+                transform: `scale(${scale})`,
                 width: "380px",
                 height: "580px",
               }}
             >
-              <ReportCardContent processedData={processedData} ref={cardRef} />
+              <ReportCardContent processedData={processedData} />
             </div>
           </div>
         </div>
@@ -352,6 +401,55 @@ const AnimatedCard: React.FC<{
   );
 };
 
+// A new component for streaks
+const StreakCard: React.FC<{
+  current: number;
+  longest: number;
+  delay?: number;
+}> = ({ current, longest, delay = 0 }) => {
+  const style = {
+    animationDelay: `${delay}ms`,
+    animationFillMode: "backwards",
+  } as React.CSSProperties;
+
+  return (
+    <div
+      style={style}
+      className="bg-surface-glass backdrop-blur-xl p-5 rounded-2xl shadow-lg border border-white/10 relative overflow-hidden animate-fade-in"
+    >
+      <div className={`absolute top-0 left-0 right-0 h-1 bg-red-400`}></div>
+      <div className="flex items-center space-x-4">
+        <div className="flex-shrink-0">
+          <CalendarIcon className="w-8 h-8" />
+        </div>
+        <div className="flex-1">
+          <p className="text-sm font-medium text-gray-400">連続読書日数</p>
+          <div className="flex items-baseline justify-between mt-1">
+            <div className="text-left">
+              <p className="text-2xl font-bold text-on-surface flex items-baseline">
+                {current.toLocaleString()}
+                <span className="text-base font-normal text-gray-400 ml-1.5">
+                  日
+                </span>
+              </p>
+              <p className="text-xs text-gray-500 -mt-1">現在</p>
+            </div>
+            <div className="text-right">
+              <p className="text-lg font-bold text-on-surface/70 flex items-baseline">
+                {longest.toLocaleString()}
+                <span className="text-sm font-normal text-gray-400 ml-1">
+                  日
+                </span>
+              </p>
+              <p className="text-xs text-gray-500 -mt-1">最長</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const Dashboard: React.FC<DashboardProps> = ({ processedData }) => {
   const [isReportCardOpen, setIsReportCardOpen] = useState(false);
   const {
@@ -361,6 +459,7 @@ const Dashboard: React.FC<DashboardProps> = ({ processedData }) => {
     calendarData,
     levelData,
     longestStreak,
+    currentStreak,
   } = processedData;
 
   const chartData = useMemo(
@@ -566,14 +665,22 @@ const Dashboard: React.FC<DashboardProps> = ({ processedData }) => {
         </div>
 
         {/* Stat Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
+          <StatCard
+            title="累計読了文字数"
+            value={cumulativeData.word_count.toLocaleString()}
+            unit="文字"
+            icon={<WordIcon className="w-8 h-8" />}
+            accentColor="bg-yellow-400"
+            delay={100}
+          />
           <StatCard
             title="累計読了作品数"
             value={cumulativeData.book_count.toLocaleString()}
             unit="作品"
             icon={<BookIcon className="w-8 h-8" />}
             accentColor="bg-primary"
-            delay={100}
+            delay={200}
           />
           <StatCard
             title="累計読了話数"
@@ -581,30 +688,27 @@ const Dashboard: React.FC<DashboardProps> = ({ processedData }) => {
             unit="話"
             icon={<ChapterIcon className="w-8 h-8" />}
             accentColor="bg-secondary"
-            delay={200}
-          />
-          <StatCard
-            title="累計読了文字数"
-            value={cumulativeData.word_count.toLocaleString()}
-            unit="文字"
-            icon={<WordIcon className="w-8 h-8" />}
-            accentColor="bg-yellow-400"
             delay={300}
+          />
+          <StreakCard
+            current={currentStreak}
+            longest={longestStreak}
+            delay={400}
           />
         </div>
 
         {/* Level & Goal */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
-          <AnimatedCard delay={400} className="min-h-[220px]">
+          <AnimatedCard delay={500} className="min-h-[220px]">
             <LevelProgress data={levelData} />
           </AnimatedCard>
-          <AnimatedCard delay={500} className="min-h-[220px]">
+          <AnimatedCard delay={600} className="min-h-[220px]">
             <ReadingGoal monthlyData={allMonthlyData} />
           </AnimatedCard>
         </div>
 
         {/* Monthly Trend Chart */}
-        <AnimatedCard delay={600}>
+        <AnimatedCard delay={700}>
           <h2 className="text-2xl font-bold text-on-surface mb-4">
             月間読書トレンド
           </h2>
@@ -636,7 +740,7 @@ const Dashboard: React.FC<DashboardProps> = ({ processedData }) => {
         </AnimatedCard>
 
         {/* Activity Calendar */}
-        <AnimatedCard delay={700}>
+        <AnimatedCard delay={800}>
           <div className="flex justify-between items-center mb-4">
             <h2 className="text-2xl font-bold text-on-surface flex items-center gap-2">
               <CalendarIcon className="w-6 h-6" />
@@ -651,15 +755,15 @@ const Dashboard: React.FC<DashboardProps> = ({ processedData }) => {
 
         {/* Comparison & Personal Insights */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
-          <AnimatedCard delay={800}>
+          <AnimatedCard delay={900}>
             <ComparisonStats data={comparisonData} />
           </AnimatedCard>
-          <AnimatedCard delay={900}>
+          <AnimatedCard delay={1000}>
             <PersonalInsights data={personalInsightsData} />
           </AnimatedCard>
         </div>
 
-        <AnimatedCard delay={1000}>
+        <AnimatedCard delay={1100}>
           <Roadmap />
         </AnimatedCard>
       </div>

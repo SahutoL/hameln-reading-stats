@@ -35,52 +35,6 @@ import {
 
 type View = "dashboard" | "yearly-report" | "achievements";
 
-// 3 days ago filter
-const getFilteredData = (
-  data: ReadingDataResponse | null
-): ReadingDataResponse | null => {
-  if (!data) return null;
-
-  const cutoffDate = new Date();
-  cutoffDate.setDate(cutoffDate.getDate() - 3);
-  cutoffDate.setHours(23, 59, 59, 999);
-
-  const filteredData = JSON.parse(JSON.stringify(data));
-
-  for (const yearStr in filteredData.data) {
-    const year = parseInt(yearStr, 10);
-    for (const monthStr in filteredData.data[yearStr]) {
-      const month = parseInt(monthStr, 10);
-      const monthData = filteredData.data[yearStr][monthStr];
-
-      let newBookCount = 0;
-      let newChapterCount = 0;
-      let newWordCount = 0;
-
-      const newDailyData: { [day: string]: DailyData } = {};
-
-      for (const dayStr in monthData.daily_data) {
-        const day = parseInt(dayStr, 10);
-        const entryDate = new Date(year, month - 1, day);
-
-        if (entryDate <= cutoffDate) {
-          const daily = monthData.daily_data[dayStr];
-          newDailyData[dayStr] = daily;
-          newBookCount += daily.daily_book_count;
-          newChapterCount += daily.daily_chapter_count;
-          newWordCount += daily.daily_word_count;
-        }
-      }
-
-      monthData.daily_data = newDailyData;
-      monthData.book_count = newBookCount;
-      monthData.chapter_count = newChapterCount;
-      monthData.word_count = newWordCount;
-    }
-  }
-  return filteredData;
-};
-
 const App: React.FC = () => {
   const [token, setToken] = useState<string | null>(
     localStorage.getItem("hameln_token")
@@ -250,22 +204,17 @@ const App: React.FC = () => {
     }
   }, [token, fetchReadingData]);
 
-  const filteredReadingData = useMemo(
-    () => getFilteredData(readingData),
-    [readingData]
-  );
-
   const processedData: ProcessedData | null = useMemo(() => {
-    if (!filteredReadingData) {
+    if (!readingData) {
       return null;
     }
 
     const flattenedData: MonthlyData[] = [];
     const calendarData: Map<string, number> = new Map();
 
-    for (const yearStr in filteredReadingData.data) {
+    for (const yearStr in readingData.data) {
       const year = parseInt(yearStr, 10);
-      const yearData = filteredReadingData.data[yearStr];
+      const yearData = readingData.data[yearStr];
       for (const monthStr in yearData) {
         const month = parseInt(monthStr, 10);
         const monthStats = yearData[monthStr];
@@ -297,9 +246,9 @@ const App: React.FC = () => {
       word_count: 0,
     };
 
-    for (const yearStr in filteredReadingData.data) {
-      for (const monthStr in filteredReadingData.data[yearStr]) {
-        const month = filteredReadingData.data[yearStr][monthStr];
+    for (const yearStr in readingData.data) {
+      for (const monthStr in readingData.data[yearStr]) {
+        const month = readingData.data[yearStr][monthStr];
         cumulative.book_count += month.book_count;
         cumulative.chapter_count += month.chapter_count;
         cumulative.word_count += month.word_count;
@@ -328,19 +277,60 @@ const App: React.FC = () => {
       (a, b) => b.year - a.year
     );
 
-    // --- Longest Streak Calculation ---
+    // --- Streak Calculation ---
     const sortedDates = Array.from(calendarData.keys()).sort();
     let longestStreak = 0;
+    let currentStreak = 0;
+
     if (sortedDates.length > 0) {
-      let currentStreak = 1;
+      // Longest streak calculation
+      let tempStreak = 1;
       longestStreak = 1;
       for (let i = 1; i < sortedDates.length; i++) {
         const diffDays =
           (new Date(sortedDates[i]).getTime() -
             new Date(sortedDates[i - 1]).getTime()) /
           (1000 * 60 * 60 * 24);
-        currentStreak = Math.round(diffDays) === 1 ? currentStreak + 1 : 1;
-        longestStreak = Math.max(longestStreak, currentStreak);
+        tempStreak = Math.round(diffDays) === 1 ? tempStreak + 1 : 1;
+        longestStreak = Math.max(longestStreak, tempStreak);
+      }
+
+      // Current streak calculation (with 3-day data delay in mind)
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+
+      // The latest date for which data is available (assumed to be 3 days ago)
+      const dataCutoffDate = new Date();
+      dataCutoffDate.setDate(dataCutoffDate.getDate() - 3);
+      dataCutoffDate.setHours(0, 0, 0, 0);
+
+      const lastReadingDateStr = sortedDates[sortedDates.length - 1];
+      const lastReadingDate = new Date(lastReadingDateStr);
+      lastReadingDate.setHours(0, 0, 0, 0);
+
+      // Calculate the difference between the last reading day and the last day data is available
+      const diffFromCutoff =
+        (dataCutoffDate.getTime() - lastReadingDate.getTime()) /
+        (1000 * 60 * 60 * 24);
+
+      // If the user read on the last available day (3 days ago) or the day before that (4 days ago),
+      // the streak is considered current.
+      if (diffFromCutoff <= 1) {
+        currentStreak = 1;
+        for (let i = sortedDates.length - 2; i >= 0; i--) {
+          const currentDate = new Date(sortedDates[i + 1]);
+          const prevDate = new Date(sortedDates[i]);
+          const diff =
+            (currentDate.getTime() - prevDate.getTime()) /
+            (1000 * 60 * 60 * 24);
+          if (Math.round(diff) === 1) {
+            currentStreak++;
+          } else {
+            break;
+          }
+        }
+      } else {
+        currentStreak = 0;
       }
     }
 
@@ -431,9 +421,10 @@ const App: React.FC = () => {
       levelData,
       achievementsByCategory,
       longestStreak,
+      currentStreak,
       mostProudAchievement,
     };
-  }, [filteredReadingData]);
+  }, [readingData]);
 
   const renderCurrentView = () => {
     if (!processedData) return null;
