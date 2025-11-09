@@ -552,3 +552,56 @@ export const ShieldCheckIcon: React.FC<
     />
   </svg>
 );
+
+export const CogIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    fill="none"
+    viewBox="0 0 24 24"
+    strokeWidth={1.5}
+    stroke="currentColor"
+    {...props}
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M10.343 3.94c.09-.542.56-1.007 1.11-.111l.281.281c.099.099.21.18.327.245l.282.141a2.25 2.25 0 0 1 2.898 2.898l-.141.282c-.065.117-.146.228-.245.327l-.281.281c-.896.896-2.636.896-3.532 0l-.281-.281a2.25 2.25 0 0 1-.245-.327l-.141-.282a2.25 2.25 0 0 1 2.898-2.898l.282-.141c.117-.065.228-.146.327-.245l.281-.281a.5.5 0 0 0-.111-1.11H10.343M12 12.75a2.25 2.25 0 1 0 0-4.5 2.25 2.25 0 0 0 0 4.5Zm0 0v2.25m0-6.75v2.25m0 9v2.25m-6.75-4.5H3m18 0h-2.25m-13.5-6.75L3.75 3.75m16.5 16.5-2.25-2.25M3.75 20.25l2.25-2.25m13.5-13.5-2.25 2.25"
+    />
+  </svg>
+);
+
+export const PaintBrushIcon: React.FC<React.SVGProps<SVGSVGElement>> = (
+  props
+) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    fill="none"
+    viewBox="0 0 24 24"
+    strokeWidth={1.5}
+    stroke="currentColor"
+    {...props}
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="m16.862 4.487 1.687-1.688a1.875 1.875 0 1 1 2.652 2.652L6.832 19.82a4.5 4.5 0 0 1-1.897 1.13l-2.685.8.8-2.685a4.5 4.5 0 0 1 1.13-1.897L16.863 4.487Zm0 0L19.5 7.125"
+    />
+  </svg>
+);
+
+export const BellIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    fill="none"
+    viewBox="0 0 24 24"
+    strokeWidth={1.5}
+    stroke="currentColor"
+    {...props}
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0"
+    />
+  </svg>
+);
