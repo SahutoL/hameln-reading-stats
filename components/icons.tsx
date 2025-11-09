@@ -518,3 +518,37 @@ export const XIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
     />
   </svg>
 );
+
+export const ShareIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    fill="none"
+    viewBox="0 0 24 24"
+    strokeWidth={1.5}
+    stroke="currentColor"
+    {...props}
+  >
+    <path
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      d="M7.217 10.907a2.25 2.25 0 1 0 0 2.186m0-2.186c.195.025.39.05.588.082a2.251 2.251 0 0 1 1.639 1.639c.032.198.057.393.082.588m0 0a2.25 2.25 0 1 0 0-2.186m0 2.186c-.195-.025-.39-.05-.588-.082a2.251 2.251 0 0 0-1.639-1.639c-.032-.198-.057-.393-.082-.588m0 0a2.25 2.25 0 1 0 0 2.186m0-2.186 6.841-3.955a2.25 2.25 0 1 0 0-2.186m0 2.186-6.841 3.955"
+    />
+  </svg>
+);
+
+export const ShieldCheckIcon: React.FC<
+  React.SVGProps<SVGSVGElement> & { tierColor: string; className?: string }
+> = ({ tierColor, ...props }) => (
+  <svg
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="0 0 24 24"
+    fill={tierColor}
+    {...props}
+  >
+    <path
+      fillRule="evenodd"
+      d="M12 2.25c-2.429 0-4.82.175-7.143.513A1.5 1.5 0 0 0 3.5 4.22v7.755c0 2.668 1.443 5.174 3.733 6.642a20.25 20.25 0 0 0 4.267 2.126.75.75 0 0 0 .5 0 20.25 20.25 0 0 0 4.267-2.126c2.29-1.468 3.733-3.974 3.733-6.642V4.22a1.5 1.5 0 0 0-1.357-1.457C16.82 2.425 14.43 2.25 12 2.25ZM15.28 9.22a.75.75 0 0 0-1.06-1.06l-4.5 4.5a.75.75 0 0 0 1.06 1.06l4.5-4.5ZM8.22 10.28a.75.75 0 0 0-1.06 1.06l2.25 2.25a.75.75 0 0 0 1.06 0l4.5-4.5a.75.75 0 0 0-1.06-1.06L10.5 12.44 8.22 10.28Z"
+      clipRule="evenodd"
+    />
+  </svg>
+);

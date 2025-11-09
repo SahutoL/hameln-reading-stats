@@ -91,6 +91,7 @@ export interface ProcessedData {
   levelData: LevelData;
   achievementsByCategory: AchievementCategory[];
   longestStreak: number;
+  mostProudAchievement: Achievement | null;
 }
 
 // For Comparison Stats
@@ -132,10 +133,19 @@ export interface PersonalInsightsData {
 }
 
 // For new Achievements system
+export type AchievementTier =
+  | "bronze"
+  | "silver"
+  | "gold"
+  | "platinum"
+  | "diamond"
+  | "special";
+
 export interface Achievement {
   name: string;
   description: string;
   value: number;
+  tier: AchievementTier;
 }
 
 export interface NextAchievement {

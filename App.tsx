@@ -9,6 +9,8 @@ import {
   ProcessedData,
   AchievementCategory,
   PersonalInsightsData,
+  Achievement,
+  AchievementTier,
 } from "./types";
 import Login from "./components/Login";
 import Dashboard from "./components/Dashboard";
@@ -394,6 +396,33 @@ const App: React.FC = () => {
         };
       });
 
+    // Find most proud achievement
+    let mostProudAchievement: Achievement | null = null;
+    const tierOrder: AchievementTier[] = [
+      "bronze",
+      "silver",
+      "gold",
+      "platinum",
+      "diamond",
+      "special",
+    ];
+
+    achievementsByCategory.forEach((category) => {
+      const unlocked = category.achievements.filter(
+        (ach) => category.currentValue >= ach.value
+      );
+      if (unlocked.length > 0) {
+        const latest = unlocked[unlocked.length - 1];
+        if (
+          !mostProudAchievement ||
+          tierOrder.indexOf(latest.tier) >
+            tierOrder.indexOf(mostProudAchievement.tier)
+        ) {
+          mostProudAchievement = latest;
+        }
+      }
+    });
+
     return {
       allMonthlyData: sortedAllMonthlyData,
       yearlyData,
@@ -402,6 +431,7 @@ const App: React.FC = () => {
       levelData,
       achievementsByCategory,
       longestStreak,
+      mostProudAchievement,
     };
   }, [filteredReadingData]);
 
