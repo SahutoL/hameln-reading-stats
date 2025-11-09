@@ -3,7 +3,7 @@ import React from "react";
 const PrivacyPolicy: React.FC = () => {
   return (
     <>
-      <p className="text-sm text-gray-400">最終更新日: 2024年7月1日</p>
+      <p className="text-sm text-gray-400">最終更新日: 2025年11月9日</p>
 
       <h3 className="font-bold text-lg text-on-surface">1. はじめに</h3>
       <p>

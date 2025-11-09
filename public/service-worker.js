@@ -1,4 +1,4 @@
-const CACHE_NAME = "hameln-reading-stats-v3.12";
+const CACHE_NAME = "hameln-reading-stats-v3.13";
 const urlsToCache = [
   "/",
   "/index.html",
