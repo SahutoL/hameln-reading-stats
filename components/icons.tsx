@@ -539,14 +539,10 @@ export const ShareIcon: React.FC<React.SVGProps<SVGSVGElement>> = (props) => (
 export const ShieldCheckIcon: React.FC<
   React.SVGProps<SVGSVGElement> & { tierColor: string; className?: string }
 > = ({ tierColor, ...props }) => (
-  <svg
-    xmlns="http://www.w3.org/2000/svg"
-    viewBox="0 0 24 24"
-    fill={tierColor}
-    {...props}
-  >
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" {...props}>
     <path
       fillRule="evenodd"
+      fill={tierColor}
       d="M12 2.25c-2.429 0-4.82.175-7.143.513A1.5 1.5 0 0 0 3.5 4.22v7.755c0 2.668 1.443 5.174 3.733 6.642a20.25 20.25 0 0 0 4.267 2.126.75.75 0 0 0 .5 0 20.25 20.25 0 0 0 4.267-2.126c2.29-1.468 3.733-3.974 3.733-6.642V4.22a1.5 1.5 0 0 0-1.357-1.457C16.82 2.425 14.43 2.25 12 2.25ZM15.28 9.22a.75.75 0 0 0-1.06-1.06l-4.5 4.5a.75.75 0 0 0 1.06 1.06l4.5-4.5ZM8.22 10.28a.75.75 0 0 0-1.06 1.06l2.25 2.25a.75.75 0 0 0 1.06 0l4.5-4.5a.75.75 0 0 0-1.06-1.06L10.5 12.44 8.22 10.28Z"
       clipRule="evenodd"
     />

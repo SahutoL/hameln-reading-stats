@@ -189,7 +189,7 @@ const ReportCardModal: React.FC<ReportCardModalProps> = ({
     return new Promise((resolve) => {
       canvas.toBlob((blob) => {
         resolve(blob);
-      }, "image/png");
+      }, "image/jpeg");
     });
   }, []);
 
@@ -200,7 +200,7 @@ const ReportCardModal: React.FC<ReportCardModalProps> = ({
       if (blob) {
         const url = URL.createObjectURL(blob);
         const link = document.createElement("a");
-        link.download = "reading-report-card.png";
+        link.download = "reading-report-card.jpeg";
         link.href = url;
         document.body.appendChild(link); // Required for Firefox
         link.click();
@@ -223,8 +223,8 @@ const ReportCardModal: React.FC<ReportCardModalProps> = ({
         throw new Error("Failed to generate image blob.");
       }
 
-      const file = new File([blob], "reading-report-card.png", {
-        type: "image/png",
+      const file = new File([blob], "reading-report-card.jpeg", {
+        type: "image/jpeg",
       });
       const text = `私の年間読書レポートです！あなたも自分の読書データを可視化してみませんか？ #HamelnReadingStats`;
       const url = window.location.origin;
@@ -246,7 +246,7 @@ const ReportCardModal: React.FC<ReportCardModalProps> = ({
         // Trigger download for the user
         const downloadUrl = URL.createObjectURL(blob);
         const link = document.createElement("a");
-        link.download = "reading-report-card.png";
+        link.download = "reading-report-card.jpeg";
         link.href = downloadUrl;
         document.body.appendChild(link);
         link.click();
@@ -277,7 +277,23 @@ const ReportCardModal: React.FC<ReportCardModalProps> = ({
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="読書レポートカード">
       <div className="flex flex-col items-center gap-6">
-        <ReportCardContent processedData={processedData} ref={cardRef} />
+        {/* Wrapper for responsive scaling */}
+        <div className="w-full max-w-[380px]">
+          <div className="aspect-[380/580] w-full h-auto relative">
+            {/* The element to be captured by html2canvas must have fixed dimensions, so we scale it down. */}
+            <div
+              className="origin-top-left transform-gpu absolute top-0 left-0"
+              style={{
+                transform: "scale(calc(100% / 380px))",
+                width: "380px",
+                height: "580px",
+              }}
+            >
+              <ReportCardContent processedData={processedData} ref={cardRef} />
+            </div>
+          </div>
+        </div>
+
         <div className="flex flex-col sm:flex-row gap-4 w-full max-w-sm">
           <button
             onClick={handleDownload}
@@ -457,9 +473,11 @@ const Dashboard: React.FC<DashboardProps> = ({ processedData }) => {
         5: 0,
         6: 0,
       };
-      calendarData.forEach(
-        (words, dateStr) => (dayCounts[new Date(dateStr).getDay()] += words)
-      );
+      calendarData.forEach((words, dateStr) => {
+        const dayOfWeek = new Date(dateStr).getDay();
+        dayCounts[dayOfWeek] += words;
+      });
+
       const maxDayIndex = Object.keys(dayCounts).reduce((a, b) =>
         dayCounts[Number(a)] > dayCounts[Number(b)] ? a : b
       );
@@ -473,9 +491,6 @@ const Dashboard: React.FC<DashboardProps> = ({ processedData }) => {
         "土曜日",
       ];
 
-      const activeDays = calendarData.size;
-      const totalWords = cumulativeData.word_count;
-
       let bestMonthInfo = { month: "N/A", words: 0 };
       if (allMonthlyData.length > 0) {
         const best = allMonthlyData.reduce((prev, current) =>
@@ -487,7 +502,6 @@ const Dashboard: React.FC<DashboardProps> = ({ processedData }) => {
         };
       }
 
-      const totalMonthsWithReading = allMonthlyData.length;
       let bestYearInfo = { year: 0, words: 0 };
       if (yearlyData.length > 0) {
         const best = yearlyData.reduce((prev, current) =>
@@ -496,199 +510,165 @@ const Dashboard: React.FC<DashboardProps> = ({ processedData }) => {
         bestYearInfo = { year: best.year, words: best.word_count };
       }
 
+      const totalActiveDays = calendarData.size;
+      const totalWords = cumulativeData.word_count;
+      const dailyAvg =
+        totalActiveDays > 0 ? Math.round(totalWords / totalActiveDays) : 0;
+
+      const totalMonthsWithActivity = allMonthlyData.length;
+      const avgBooksPerMonth =
+        totalMonthsWithActivity > 0
+          ? parseFloat(
+              (cumulativeData.book_count / totalMonthsWithActivity).toFixed(1)
+            )
+          : 0;
+
+      const totalBooks = cumulativeData.book_count;
+      const avgWordsPerBook =
+        totalBooks > 0 ? Math.round(totalWords / totalBooks) : 0;
+
       const finalPersonalInsightsData: PersonalInsightsData = {
         bestDayOfWeek: dayNames[Number(maxDayIndex)],
         bestMonth: bestMonthInfo,
-        dailyAverage: activeDays > 0 ? Math.round(totalWords / activeDays) : 0,
-        avgBooksPerMonth:
-          totalMonthsWithReading > 0
-            ? parseFloat(
-                (cumulativeData.book_count / totalMonthsWithReading).toFixed(1)
-              )
-            : 0,
-        avgWordsPerBook:
-          cumulativeData.book_count > 0
-            ? Math.round(cumulativeData.word_count / cumulativeData.book_count)
-            : 0,
+        dailyAverage: dailyAvg,
+        avgBooksPerMonth: avgBooksPerMonth,
+        avgWordsPerBook: avgWordsPerBook,
         bestYear: bestYearInfo,
       };
 
-      // --- Reading trends calculation ---
-      const dayCountsTrend: number[] = Array(7).fill(0);
-      calendarData.forEach(
-        (words, dateStr) =>
-          (dayCountsTrend[new Date(dateStr).getDay()] += words)
-      );
-      const trendsData = dayNames.map((day, index) => ({
-        day,
-        文字数: dayCountsTrend[index],
+      // --- Reading Trends ---
+      const finalReadingTrendsData = dayNames.map((day, index) => ({
+        day: day.charAt(0),
+        文字数: dayCounts[index] || 0,
       }));
 
       return {
-        readingTrendsData: trendsData,
+        readingTrendsData: finalReadingTrendsData,
         comparisonData: finalComparisonData,
         personalInsightsData: finalPersonalInsightsData,
       };
-    }, [cumulativeData, calendarData, allMonthlyData, yearlyData]);
+    }, [allMonthlyData, yearlyData, cumulativeData, calendarData]);
 
   return (
-    <div className="space-y-6">
-      <div className="animate-fade-in flex justify-between items-start">
-        <div>
+    <>
+      <div className="space-y-4 md:space-y-6 animate-fade-in">
+        <div className="flex flex-col md:flex-row justify-between md:items-center gap-2">
           <h1 className="text-3xl md:text-4xl font-bold text-on-surface">
             ダッシュボード
           </h1>
-          <p className="text-gray-400 mt-1">あなたの読書活動の概要</p>
+          <button
+            onClick={() => setIsReportCardOpen(true)}
+            className="flex items-center gap-2 bg-primary text-white font-semibold py-2 px-4 rounded-lg hover:bg-primary-variant transition-colors shadow-lg shadow-primary/30"
+          >
+            <ShareIcon className="w-5 h-5" />
+            読書レポートをシェア
+          </button>
         </div>
-        <button
-          onClick={() => setIsReportCardOpen(true)}
-          className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white bg-primary/80 rounded-full hover:bg-primary transition-colors backdrop-blur-sm"
-        >
-          <ShareIcon className="w-5 h-5" />
-          <span>シェア</span>
-        </button>
-      </div>
 
-      <div
-        className="flex items-center gap-2 text-sm text-gray-400 bg-surface/50 p-3 rounded-xl border border-white/10 animate-fade-in"
-        style={{ animationDelay: "100ms" }}
-      >
-        <InformationCircleIcon className="w-5 h-5 text-primary" />
-        <span>
-          ※このダッシュボードに表示されるデータは、読書データAPIの仕様に基づき、約3日前のものとなります。
-        </span>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <StatCard
-          delay={200}
-          title="累計読了作品数"
-          value={cumulativeData.book_count.toLocaleString()}
-          icon={<BookIcon className="w-7 h-7 text-primary" />}
-          unit="作品"
-          accentColor="bg-primary"
-        />
-        <StatCard
-          delay={300}
-          title="累計読了話数"
-          value={cumulativeData.chapter_count.toLocaleString()}
-          icon={<ChapterIcon className="w-7 h-7 text-secondary" />}
-          unit="話"
-          accentColor="bg-secondary"
-        />
-        <StatCard
-          delay={400}
-          title="累計読了文字数"
-          value={cumulativeData.word_count.toLocaleString()}
-          icon={<WordIcon className="w-7 h-7 text-yellow-400" />}
-          unit="文字"
-          accentColor="bg-yellow-400"
-        />
-        <StatCard
-          delay={500}
-          title="最長連続読書日数"
-          value={longestStreak.toLocaleString()}
-          icon={<CalendarIcon className="w-7 h-7 text-red-400" />}
-          unit="日"
-          accentColor="bg-red-400"
-        />
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        <div className="lg:col-span-8">
-          <AnimatedCard delay={600}>
-            <h2 className="text-xl md:text-2xl font-bold text-on-surface mb-4">
-              月間読書量推移 (直近12ヶ月)
-            </h2>
-            <div className="h-96">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart
-                  data={chartData}
-                  margin={{ top: 5, right: 20, left: 10, bottom: 5 }}
-                >
-                  <defs>
-                    <linearGradient id="colorUv" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#bb86fc" stopOpacity={0.8} />
-                      <stop
-                        offset="95%"
-                        stopColor="#bb86fc"
-                        stopOpacity={0.2}
-                      />
-                    </linearGradient>
-                  </defs>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#ffffff20" />
-                  <XAxis dataKey="name" stroke="#9ca3af" fontSize={12} />
-                  <YAxis
-                    yAxisId="left"
-                    orientation="left"
-                    stroke="#9ca3af"
-                    fontSize={12}
-                    tickFormatter={(value) => `${Number(value) / 1000}k`}
-                  />
-                  <Tooltip
-                    contentStyle={{
-                      backgroundColor: "rgba(30, 30, 36, 0.8)",
-                      border: "1px solid #ffffff20",
-                      color: "#fff",
-                      borderRadius: "12px",
-                    }}
-                    formatter={(value: number) => value.toLocaleString()}
-                  />
-                  <Legend />
-                  <Bar yAxisId="left" dataKey="文字数" fill="url(#colorUv)" />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-          </AnimatedCard>
+        {/* Stat Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
+          <StatCard
+            title="累計読了作品数"
+            value={cumulativeData.book_count.toLocaleString()}
+            unit="作品"
+            icon={<BookIcon className="w-8 h-8" />}
+            accentColor="bg-primary"
+            delay={100}
+          />
+          <StatCard
+            title="累計読了話数"
+            value={cumulativeData.chapter_count.toLocaleString()}
+            unit="話"
+            icon={<ChapterIcon className="w-8 h-8" />}
+            accentColor="bg-secondary"
+            delay={200}
+          />
+          <StatCard
+            title="累計読了文字数"
+            value={cumulativeData.word_count.toLocaleString()}
+            unit="文字"
+            icon={<WordIcon className="w-8 h-8" />}
+            accentColor="bg-yellow-400"
+            delay={300}
+          />
         </div>
-        <div className="lg:col-span-4 flex flex-col gap-6">
-          <AnimatedCard delay={700} className="flex-1 flex flex-col">
+
+        {/* Level & Goal */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
+          <AnimatedCard delay={400} className="min-h-[220px]">
             <LevelProgress data={levelData} />
           </AnimatedCard>
-          <AnimatedCard delay={800} className="flex-1 flex flex-col">
+          <AnimatedCard delay={500} className="min-h-[220px]">
             <ReadingGoal monthlyData={allMonthlyData} />
           </AnimatedCard>
         </div>
-      </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <AnimatedCard delay={900}>
-          <ComparisonStats data={comparisonData} />
-        </AnimatedCard>
-        <AnimatedCard delay={1000}>
-          <PersonalInsights data={personalInsightsData} />
-        </AnimatedCard>
-      </div>
-
-      <AnimatedCard delay={1100}>
-        <h2 className="text-xl md:text-2xl font-bold text-on-surface mb-4">
-          アクティビティカレンダー (直近1年)
-        </h2>
-        <ActivityCalendar data={calendarData} />
-      </AnimatedCard>
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <AnimatedCard delay={1300}>
-          <ReadingTrends data={readingTrendsData} />
-        </AnimatedCard>
-        <AnimatedCard delay={1400}>
-          <h2 className="text-xl md:text-2xl font-bold text-on-surface mb-4">
-            個人データ詳細
+        {/* Monthly Trend Chart */}
+        <AnimatedCard delay={600}>
+          <h2 className="text-2xl font-bold text-on-surface mb-4">
+            月間読書トレンド
           </h2>
-          <PersonalStats yearlyData={yearlyData} />
+          <div className="h-80">
+            <ResponsiveContainer width="100%" height="100%">
+              <BarChart
+                data={chartData}
+                margin={{ top: 5, right: 20, left: -10, bottom: 5 }}
+              >
+                <CartesianGrid strokeDasharray="3 3" stroke="#ffffff20" />
+                <XAxis dataKey="name" stroke="#9ca3af" />
+                <YAxis
+                  stroke="#9ca3af"
+                  tickFormatter={(v) => `${Number(v) / 1000}k`}
+                />
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: "rgba(30, 30, 36, 0.8)",
+                    border: "1px solid #ffffff20",
+                    color: "#fff",
+                  }}
+                  formatter={(v: number) => v.toLocaleString()}
+                />
+                <Legend />
+                <Bar dataKey="文字数" fill="#bb86fc" />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </AnimatedCard>
+
+        {/* Activity Calendar */}
+        <AnimatedCard delay={700}>
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-2xl font-bold text-on-surface flex items-center gap-2">
+              <CalendarIcon className="w-6 h-6" />
+              活動カレンダー
+            </h2>
+            <p className="text-sm text-gray-400">
+              {calendarData.size} 日間の活動
+            </p>
+          </div>
+          <ActivityCalendar data={calendarData} />
+        </AnimatedCard>
+
+        {/* Comparison & Personal Insights */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
+          <AnimatedCard delay={800}>
+            <ComparisonStats data={comparisonData} />
+          </AnimatedCard>
+          <AnimatedCard delay={900}>
+            <PersonalInsights data={personalInsightsData} />
+          </AnimatedCard>
+        </div>
+
+        <AnimatedCard delay={1000}>
+          <Roadmap />
         </AnimatedCard>
       </div>
-
-      <AnimatedCard delay={1500}>
-        <Roadmap />
-      </AnimatedCard>
-
       <ReportCardModal
         isOpen={isReportCardOpen}
         onClose={() => setIsReportCardOpen(false)}
         processedData={processedData}
       />
-    </div>
+    </>
   );
 };
 
