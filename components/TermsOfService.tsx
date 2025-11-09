@@ -3,7 +3,7 @@ import React from "react";
 const TermsOfService: React.FC = () => {
   return (
     <>
-      <p className="text-sm text-gray-400">施行日: 2024年7月1日</p>
+      <p className="text-sm text-gray-400">施行日: 2025年11月9日</p>
 
       <h3 className="font-bold text-lg text-on-surface">第1条 (適用)</h3>
       <p>
