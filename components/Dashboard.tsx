@@ -119,12 +119,6 @@ const ReportCardContent: React.FC<ReportCardProps> = ({ processedData }) => {
           </div>
           <div>
             <p className="text-2xl font-bold">
-              {cumulativeData.book_count.toLocaleString()}
-            </p>
-            <p className="text-xs text-gray-400 mt-1">累計読了作品数</p>
-          </div>
-          <div>
-            <p className="text-2xl font-bold">
               {longestStreak.toLocaleString()}
             </p>
             <p className="text-xs text-gray-400 mt-1">最長連続読書日数</p>
