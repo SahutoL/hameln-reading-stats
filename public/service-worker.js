@@ -1,4 +1,4 @@
-const CACHE_NAME = "hameln-reading-stats-v3.14";
+const CACHE_NAME = "hameln-reading-stats-v3.15";
 const urlsToCache = [
   "/",
   "/index.html",
@@ -9,6 +9,7 @@ const urlsToCache = [
   "https://unpkg.com/react@18/umd/react.production.min.js",
   "https://unpkg.com/react-dom@18/umd/react-dom.production.min.js",
   "https://unpkg.com/recharts@2.12.7/umd/Recharts.min.js",
+  "https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js",
 ];
 
 // Service Workerのインストール処理

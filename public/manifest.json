@@ -32,5 +32,28 @@
   "display": "standalone",
   "theme_color": "#121212",
   "background_color": "#121212",
-  "description": "小説投稿サイト「ハーメルン」の読書データを連携し、あなたの読書傾向を美しいグラフや統計で可視化します。"
+  "description": "小説投稿サイト「ハーメルン」の読書データを連携し、あなたの読書傾向を美しいグラフや統計で可視化します。",
+  "shortcuts": [
+    {
+      "name": "ダッシュボード",
+      "short_name": "Dashboard",
+      "description": "読書データの統計情報を表示します",
+      "url": "/#/dashboard",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "年次レポート",
+      "short_name": "Report",
+      "description": "年ごとの読書活動を振り返ります",
+      "url": "/#/yearly-report",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "実績一覧",
+      "short_name": "Achievements",
+      "description": "獲得した実績を確認します",
+      "url": "/#/achievements",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    }
+  ]
 }
