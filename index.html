@@ -1,102 +1,125 @@
 <!DOCTYPE html>
 <html lang="ja">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    
-    <!-- SEO & Metadata -->
-    <title>Hameln Reading Stats | ハーメルン読書記録を自動でグラフ化・分析</title>
-    <meta name="description" content="ハーメルンの読書データを連携し、読書量や傾向を自動でグラフ化・分析。読書目標や実績機能でモチベーションを維持し、あなたの読書体験を次のレベルへ。完全無料で安全にご利用いただけます。"/>
-    <meta name="keywords" content="ハーメルン, 読書記録, 読書管理, 読書データ, データ可視化, 統計, グラフ, 読書習慣">
-    <meta name="theme-color" content="#121212">
-    <link rel="manifest" href="/manifest.json">
-    <link rel="icon" href="/icon-192.png" type="image/png">
-    <link rel="canonical" href="https://hameln-reading-stats.com" />
 
-    <!-- iOS Support -->
-    <link rel="apple-touch-icon" href="/icon-192.png">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Reading Stats">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <!-- Open Graph / Facebook -->
-    <meta property="og:type" content="website">
-    <meta property="og:url" content="https://hameln-reading-stats.com">
-    <meta property="og:title" content="Hameln Reading Stats | ハーメルン読書記録を自動でグラフ化・分析">
-    <meta property="og:description" content="ハーメルンの読書データを連携し、読書量や傾向を自動でグラフ化・分析。読書目標や実績機能でモチベーションを維持し、あなたの読書体験を次のレベルへ。">
-    <meta property="og:site_name" content="Hameln Reading Stats">
-    <!-- <meta property="og:image" content="https://hameln-reading-stats.com/ogp-image.png"> -->
-    
-    <!-- Twitter -->
-    <meta property="twitter:card" content="summary">
-    <meta property="twitter:title" content="Hameln Reading Stats | ハーメルン読書記録を自動でグラフ化・分析">
-    <meta property="twitter:description" content="ハーメルンの読書データを連携し、読書量や傾向を自動でグラフ化・分析。読書目標や実績機能でモチベーションを維持し、あなたの読書体験を次のレベルへ。">
-    <!-- <meta property="twitter:image" content="https://hameln-reading-stats.com/ogp-image.png"> -->
+  <!-- SEO & Metadata -->
+  <title>Hameln Reading Stats | ハーメルン読書記録を自動でグラフ化・分析</title>
+  <meta name="description"
+    content="ハーメルンの読書データを連携し、読書量や傾向を自動でグラフ化・分析。読書目標や実績機能でモチベーションを維持し、あなたの読書体験を次のレベルへ。完全無料で安全にご利用いただけます。" />
+  <meta name="keywords" content="ハーメルン, 読書記録, 読書管理, 読書データ, データ可視化, 統計, グラフ, 読書習慣">
+  <meta name="theme-color" content="#121212">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="icon" href="/icon-192.png" type="image/png">
+  <link rel="canonical" href="https://hameln-reading-stats.com" />
 
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-      tailwind.config = {
-        theme: {
-          extend: {
-            colors: {
-              'background': '#0f0f14', // Slightly bluer black
-              'surface': '#1e1e24',
-              'surface-glass': 'rgba(30, 30, 36, 0.5)', 
-              'primary': '#bb86fc',
-              'primary-variant': '#3700b3',
-              'secondary': '#03dac6',
-              'on-background': '#e0e0e0',
-              'on-surface': '#ffffff',
-            },
+  <!-- iOS Support -->
+  <link rel="apple-touch-icon" href="/icon-192.png">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Reading Stats">
+
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://hameln-reading-stats.com">
+  <meta property="og:title" content="Hameln Reading Stats | ハーメルン読書記録を自動でグラフ化・分析">
+  <meta property="og:description" content="ハーメルンの読書データを連携し、読書量や傾向を自動でグラフ化・分析。読書目標や実績機能でモチベーションを維持し、あなたの読書体験を次のレベルへ。">
+  <meta property="og:site_name" content="Hameln Reading Stats">
+  <!-- <meta property="og:image" content="https://hameln-reading-stats.com/ogp-image.png"> -->
+
+  <!-- Twitter -->
+  <meta property="twitter:card" content="summary">
+  <meta property="twitter:title" content="Hameln Reading Stats | ハーメルン読書記録を自動でグラフ化・分析">
+  <meta property="twitter:description"
+    content="ハーメルンの読書データを連携し、読書量や傾向を自動でグラフ化・分析。読書目標や実績機能でモチベーションを維持し、あなたの読書体験を次のレベルへ。">
+  <!-- <meta property="twitter:image" content="https://hameln-reading-stats.com/ogp-image.png"> -->
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            'background': '#0f0f14', // Slightly bluer black
+            'surface': '#1e1e24',
+            'surface-glass': 'rgba(30, 30, 36, 0.5)',
+            'primary': '#bb86fc',
+            'primary-variant': '#3700b3',
+            'secondary': '#03dac6',
+            'on-background': '#e0e0e0',
+            'on-surface': '#ffffff',
           },
         },
-      }
-    </script>
-    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3540900632101010" crossorigin="anonymous"></script>
-    <style>
-      /* Aurora Background Animation */
-      @keyframes aurora-animation {
-        0% { background-position: 0% 50%; }
-        50% { background-position: 100% 50%; }
-        100% { background-position: 0% 50%; }
-      }
-      .aurora-background {
-        background: linear-gradient(-45deg, #0f0f14, #120c1e, #0c1a1e, #1e0c1a);
-        background-size: 400% 400%;
-        animation: aurora-animation 30s ease infinite;
+      },
+    }
+  </script>
+  <style>
+    /* Aurora Background Animation */
+    @keyframes aurora-animation {
+      0% {
+        background-position: 0% 50%;
       }
 
-      /* Custom Animations */
-      @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(10px); }
-        to { opacity: 1; transform: translateY(0); }
+      50% {
+        background-position: 100% 50%;
       }
-      .animate-fade-in {
-        animation: fadeIn 0.5s ease-out forwards;
+
+      100% {
+        background-position: 0% 50%;
       }
-      /* Refined Scrollbar */
-      ::-webkit-scrollbar {
-        width: 10px;
-        height: 10px;
+    }
+
+    .aurora-background {
+      background: linear-gradient(-45deg, #0f0f14, #120c1e, #0c1a1e, #1e0c1a);
+      background-size: 400% 400%;
+      animation: aurora-animation 30s ease infinite;
+    }
+
+    /* Custom Animations */
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
       }
-      ::-webkit-scrollbar-track {
-        background: rgba(0, 0, 0, 0.2);
-        border-radius: 10px;
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
       }
-      ::-webkit-scrollbar-thumb {
-        background: rgba(187, 134, 252, 0.3);
-        border-radius: 10px;
-        border: 2px solid transparent;
-        background-clip: content-box;
-      }
-      ::-webkit-scrollbar-thumb:hover {
-        background: rgba(187, 134, 252, 0.5);
-      }
-    </style>
-    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    <script src="https://unpkg.com/recharts@2.12.7/umd/Recharts.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+    }
+
+    .animate-fade-in {
+      animation: fadeIn 0.5s ease-out forwards;
+    }
+
+    /* Refined Scrollbar */
+    ::-webkit-scrollbar {
+      width: 10px;
+      height: 10px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 10px;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: rgba(187, 134, 252, 0.3);
+      border-radius: 10px;
+      border: 2px solid transparent;
+      background-clip: content-box;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(187, 134, 252, 0.5);
+    }
+  </style>
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/recharts@2.12.7/umd/Recharts.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
   <script type="importmap">
 {
   "imports": {
@@ -108,15 +131,15 @@
   }
 }
 </script>
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZX46S1R8D1"></script>
-<script>
-  window.dataLayer = window.dataLayer || [];
-  function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-ZX46S1R8D1"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag() { dataLayer.push(arguments); }
+    gtag('js', new Date());
 
-  gtag('config', 'G-ZX46S1R8D1');
-</script>
-<script type="application/ld+json">
+    gtag('config', 'G-ZX46S1R8D1');
+  </script>
+  <script type="application/ld+json">
 {
   "@context": "https://schema.org",
   "@type": "SoftwareApplication",
@@ -138,17 +161,19 @@
 }
 </script>
 </head>
-  <body class="bg-background text-on-background">
-    <div id="root"></div>
-    <script type="module" src="/index.tsx"></script>
-    <script>
-        if ('serviceWorker' in navigator) {
-          window.addEventListener('load', () => {
-            navigator.serviceWorker.register('/service-worker.js')
-              .then(registration => console.log('Service Worker registered: ', registration))
-              .catch(error => console.log('Service Worker registration failed: ', error));
-          });
-        }
-    </script>
-  </body>
+
+<body class="bg-background text-on-background">
+  <div id="root"></div>
+  <script type="module" src="/index.tsx"></script>
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/service-worker.js')
+          .then(registration => console.log('Service Worker registered: ', registration))
+          .catch(error => console.log('Service Worker registration failed: ', error));
+      });
+    }
+  </script>
+</body>
+
 </html>

@@ -1,60 +1,40 @@
-import React, { useEffect } from "react";
+import React from 'react';
+import { ExternalLinkIcon } from './icons';
 
-// AdSenseスクリプトがグローバルなwindowオブジェクトに `adsbygoogle` を追加するため、
-// TypeScriptでその存在を宣言します。
-declare global {
-  interface Window {
-    adsbygoogle: any;
-  }
-}
-
-interface AdsenseProps {
-  // 広告クライアントID (例: 'ca-pub-xxxxxxxxxxxxxxxx')
-  client: string;
-  // 広告スロットID
-  slot: string;
-  // インラインスタイル
-  style?: React.CSSProperties;
-  // 広告フォーマット ('auto', 'rectangle', 'vertical', etc.)
-  format?: string;
-  // レスポンシブ広告にするかどうかのフラグ
-  responsive?: string;
-}
-
-const AdsenseComponent: React.FC<AdsenseProps> = ({
-  client,
-  slot,
-  style = { display: "block", textAlign: "center" },
-  format = "auto",
-  responsive = "true",
-}) => {
-  useEffect(() => {
-    // コンポーネントがマウントされた後に広告リクエストをプッシュします。
-    // これにより、SPAでのページ遷移後などでも広告が正しく読み込まれます。
-    try {
-      (window.adsbygoogle = window.adsbygoogle || []).push({});
-    } catch (e) {
-      console.error("Adsense execution error:", e);
-    }
-  }, []);
-
-  // AdSenseの審査に合格した有効な広告スロットIDがない場合、このコンポーネントは表示されません。
-  if (!client || !slot) {
-    return null;
-  }
-
+const AffiliateBanner: React.FC = () => {
   return (
-    <div className="w-full my-6">
-      <ins
-        className="adsbygoogle"
-        style={style}
-        data-ad-client={client}
-        data-ad-slot={slot}
-        data-ad-format={format}
-        data-full-width-responsive={responsive}
-      ></ins>
+    <div className="w-full my-6 animate-fade-in">
+      <div className="bg-surface-glass backdrop-blur-xl border border-white/10 rounded-2xl shadow-lg p-6 flex flex-col sm:flex-row items-center gap-6">
+        <div className="flex-shrink-0">
+          <img
+            src="/youware-icon-240.png"
+            alt="YouWare icon"
+            className="w-16 h-16 rounded-lg"
+          />
+        </div>
+        <div className="flex-grow text-center sm:text-left">
+          <p className="text-xs text-secondary font-semibold uppercase tracking-wider">開発者のおすすめツール</p>
+          <h3 className="text-xl font-bold text-on-surface mt-1">
+            YouWare
+          </h3>
+          <p className="text-sm text-gray-400 mt-1 max-w-lg">
+            生産性を向上させるためのユーティリティツール。あなたのデジタルライフをより快適にします。
+          </p>
+        </div>
+        <div className="flex-shrink-0 w-full sm:w-auto">
+          <a
+            href="https://www.youware.com/?via=greef"
+            target="_blank"
+            rel="noopener noreferrer sponsored"
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 font-semibold text-background bg-secondary rounded-lg hover:opacity-90 transition-opacity whitespace-nowrap"
+          >
+            <span>詳しく見る</span>
+            <ExternalLinkIcon className="w-5 h-5" />
+          </a>
+        </div>
+      </div>
     </div>
   );
 };
 
-export default AdsenseComponent;
+export default AffiliateBanner;
